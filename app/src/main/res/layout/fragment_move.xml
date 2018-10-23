@@ -14,19 +14,18 @@
      limitations under the License.
 -->
 
-<dev.dworks.apps.anexplorer.ui.CommonFrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:id="@+id/background"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:background="#323232">
+    android:layout_height="wrap_content">
 
     <LinearLayout
+        android:id="@+id/background"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_gravity="bottom"
+        android:layout_gravity="center_vertical"
+        android:background="#323232"
         android:baselineAligned="false"
-        app:boxedEdges="left|bottom|right"
         android:minHeight="?android:attr/listPreferredItemHeightSmall"
         android:orientation="horizontal">
 
@@ -95,4 +94,4 @@
         </FrameLayout>
     </LinearLayout>
 
-</dev.dworks.apps.anexplorer.ui.CommonFrameLayout>
+</FrameLayout>

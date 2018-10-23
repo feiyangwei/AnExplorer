@@ -88,38 +88,38 @@ public class RootsExpandableAdapter extends BaseExpandableListAdapter {
         if(!home.isEmpty() || !storage.isEmpty() || !phone.isEmpty() || !rooted.isEmpty()){
             home.addAll(storage);
             home.addAll(secondaryStorage);
-            home.addAll(usb);
-            home.addAll(phone);
-            home.addAll(rooted);
+//            home.addAll(usb);
+//            home.addAll(phone);
+//            home.addAll(rooted);
             groupRoots.add(new GroupInfo("Storage", home));
         }
 
-        if(!network.isEmpty()){
-            network.addAll(connection);
-            groupRoots.add(new GroupInfo("Network & Cloud", network));
-        } else if(!connection.isEmpty()){
-            groupRoots.add(new GroupInfo("Network & Cloud", connection));
-        }
+//        if(!network.isEmpty()){
+//            network.addAll(connection);
+//            groupRoots.add(new GroupInfo("Network & Cloud", network));
+//        } else if(!connection.isEmpty()){
+//            groupRoots.add(new GroupInfo("Network & Cloud", connection));
+//        }
 
-        if(!apps.isEmpty()){
-            if(!appbackup.isEmpty()) {
-                apps.addAll(appbackup);
-            }
-            groupRoots.add(new GroupInfo("Apps", apps));
-        }
+//        if(!apps.isEmpty()){
+//            if(!appbackup.isEmpty()) {
+//                apps.addAll(appbackup);
+//            }
+//            groupRoots.add(new GroupInfo("Apps", apps));
+//        }
 
-        if(!libraryMedia.isEmpty() || !libraryNonMedia.isEmpty()){
-            recent.addAll(libraryMedia);
-            recent.addAll(libraryNonMedia);
-            groupRoots.add(new GroupInfo("Library", recent));
-        } else if(!recent.isEmpty()){
-            groupRoots.add(new GroupInfo("Library", recent));
-        }
+//        if(!libraryMedia.isEmpty() || !libraryNonMedia.isEmpty()){
+//            recent.addAll(libraryMedia);
+//            recent.addAll(libraryNonMedia);
+//            groupRoots.add(new GroupInfo("Library", recent));
+//        } else if(!recent.isEmpty()){
+//            groupRoots.add(new GroupInfo("Library", recent));
+//        }
 
-        if(!folders.isEmpty()){
-            folders.addAll(bookmarks);
-            groupRoots.add(new GroupInfo("Folders", folders));
-        }
+//        if(!folders.isEmpty()){
+//            folders.addAll(bookmarks);
+//            groupRoots.add(new GroupInfo("Folders", folders));
+//        }
 
         group.clear();
         group.addAll(groupRoots);

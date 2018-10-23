@@ -9,26 +9,26 @@ import dev.dworks.apps.anexplorer.misc.Utils;
  * Created by HaKr on 25/01/17.
  */
 
-public class BasicDocumentFile extends DocumentFile {
+public class BasicDocumentFile extends android.support.provider.DocumentFile {
     private Context mContext;
     private Uri mUri;
 
-    BasicDocumentFile(DocumentFile parent, Context context, Uri uri) {
+    BasicDocumentFile(android.support.provider.DocumentFile parent, Context context, Uri uri) {
         super(parent);
         mContext = context;
         mUri = uri;
     }
 
     @Override
-    public DocumentFile createFile(String mimeType, String displayName) {
+    public android.support.provider.DocumentFile createFile(String mimeType, String displayName) {
         final Uri result = DocumentsContractApi21.createFile(mContext, mUri, mimeType, displayName);
-        return (result != null) ? new TreeDocumentFile(this, mContext, result) : null;
+        return (result != null) ? new android.support.provider.TreeDocumentFile(this, mContext, result) : null;
     }
 
     @Override
-    public DocumentFile createDirectory(String displayName) {
+    public android.support.provider.DocumentFile createDirectory(String displayName) {
         final Uri result = DocumentsContractApi21.createDirectory(mContext, mUri, displayName);
-        return (result != null) ? new TreeDocumentFile(this, mContext, result) : null;
+        return (result != null) ? new android.support.provider.TreeDocumentFile(this, mContext, result) : null;
     }
 
     @Override
@@ -92,11 +92,11 @@ public class BasicDocumentFile extends DocumentFile {
     }
 
     @Override
-    public DocumentFile[] listFiles() {
+    public android.support.provider.DocumentFile[] listFiles() {
         final Uri[] result = DocumentsContractApi21.listFiles(mContext, mUri);
-        final DocumentFile[] resultFiles = new DocumentFile[result.length];
+        final android.support.provider.DocumentFile[] resultFiles = new android.support.provider.DocumentFile[result.length];
         for (int i = 0; i < result.length; i++) {
-            resultFiles[i] = new TreeDocumentFile(this, mContext, result[i]);
+            resultFiles[i] = new android.support.provider.TreeDocumentFile(this, mContext, result[i]);
         }
         return resultFiles;
     }
@@ -112,7 +112,7 @@ public class BasicDocumentFile extends DocumentFile {
         }
     }
 
-    public static DocumentFile fromUri(Context context, Uri treeUri) {
+    public static android.support.provider.DocumentFile fromUri(Context context, Uri treeUri) {
         if (Utils.hasLollipop()) {
             return new BasicDocumentFile(null, context, treeUri);
         } else {

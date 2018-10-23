@@ -1,11 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
-<manifest xmlns:tools="http://schemas.android.com/tools"
-    xmlns:android="http://schemas.android.com/apk/res/android">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
     <uses-permission android:name="com.android.vending.BILLING" />
-    <application tools:ignore="GoogleAppIndexingWarning">
+    <application>
         <activity
-            android:name="dev.dworks.apps.anexplorer.PurchaseActivity"
+            android:name=".PurchaseActivity"
             android:theme="@style/DocumentsTheme.Document" />
         <!-- AdMob -->
         <activity
@@ -15,10 +14,6 @@
         <meta-data
             android:name="firebase_crashlytics_collection_enabled"
             android:value="false" />
-
-        <meta-data
-            android:name="com.google.android.gms.ads.APPLICATION_ID"
-            android:value="ca-app-pub-6407484780907805~2863651670"/>
     </application>
 
 </manifest>

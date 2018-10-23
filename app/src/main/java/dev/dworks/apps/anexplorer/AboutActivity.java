@@ -48,22 +48,18 @@ public class AboutActivity extends AboutFlavour implements View.OnClickListener 
 		}
 		setContentView(R.layout.activity_about);
 
-		int color = SettingsActivity.getPrimaryColor();
-		View view = findViewById(R.id.toolbar);
-		if(view instanceof Toolbar){
-			Toolbar mToolbar = (Toolbar) view;
-			mToolbar.setTitleTextAppearance(this, R.style.TextAppearance_AppCompat_Widget_ActionBar_Title);
-			if(Utils.hasKitKat() && !Utils.hasLollipop()) {
-				mToolbar.setPadding(0, getStatusBarHeight(this), 0, 0);
-			}
-			mToolbar.setBackgroundColor(color);
-			setSupportActionBar(mToolbar);
-			getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-			getSupportActionBar().setTitle(null);
-			setUpDefaultStatusBar();
-		} else {
-			view.setBackgroundColor(color);
+		Toolbar mToolbar = (Toolbar) findViewById(R.id.toolbar);
+		mToolbar.setTitleTextAppearance(this, R.style.TextAppearance_AppCompat_Widget_ActionBar_Title);
+		if(Utils.hasKitKat() && !Utils.hasLollipop()) {
+			//((LinearLayout.LayoutParams) mToolbar.getLayoutParams()).setMargins(0, getStatusBarHeight(this), 0, 0);
+			mToolbar.setPadding(0, getStatusBarHeight(this), 0, 0);
 		}
+		int color = SettingsActivity.getPrimaryColor();
+		mToolbar.setBackgroundColor(color);
+		setSupportActionBar(mToolbar);
+		getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+		getSupportActionBar().setTitle(null);
+		setUpDefaultStatusBar();
 		initAd();
 		initControls();
 	}
@@ -78,7 +74,7 @@ public class AboutActivity extends AboutFlavour implements View.OnClickListener 
 		int accentColor = ColorUtils.getTextColorForBackground(SettingsActivity.getPrimaryColor());
 		TextView logo = (TextView)findViewById(R.id.logo);
 		logo.setTextColor(accentColor);
-		String header = logo.getText() + getSuffix() + " v" + BuildConfig.VERSION_NAME + (BuildConfig.DEBUG ? " Debug" : "");
+		String header = logo.getText() + getSuffix() + " v" + BuildConfig.VERSION_NAME;
 		logo.setText(header);
 
 		TextView action_rate = (TextView)findViewById(R.id.action_rate);
@@ -106,6 +102,16 @@ public class AboutActivity extends AboutFlavour implements View.OnClickListener 
 		}
 	}
 
+	@Override
+	public boolean onOptionsItemSelected(MenuItem item) {
+		switch (item.getItemId()) {
+			case android.R.id.home:
+				finish();
+				break;
+		}
+		return super.onOptionsItemSelected(item);
+	}
+
     @Override
     public void startActivity(Intent intent) {
         if(Utils.isIntentAvailable(this, intent)) {
@@ -117,37 +123,37 @@ public class AboutActivity extends AboutFlavour implements View.OnClickListener 
 	public void onClick(View view) {
 		switch (view.getId()) {
 			case R.id.action_feedback:
-				openFeedback(this);
+				//openFeedback(this);
 				break;
 			case R.id.action_rate:
-				openPlaystore(this);
-				AnalyticsManager.logEvent("app_rate");
+				//openPlaystore(this);
+				//AnalyticsManager.logEvent("app_rate");
 				break;
 			case R.id.action_sponsor:
-				showAd();
-				AnalyticsManager.logEvent("app_sponsor");
+				//showAd();
+				//AnalyticsManager.logEvent("app_sponsor");
 				break;
 			case R.id.action_support:
-				if(Utils.isProVersion()){
-					Intent intentMarketAll = new Intent("android.intent.action.VIEW");
-					intentMarketAll.setData(Utils.getAppProStoreUri());
-					startActivity(intentMarketAll);
-				} else {
-					DocumentsApplication.openPurchaseActivity(this);
-				}
-				AnalyticsManager.logEvent("app_love");
+//				if(Utils.isProVersion()){
+//					Intent intentMarketAll = new Intent("android.intent.action.VIEW");
+//					intentMarketAll.setData(Utils.getAppProStoreUri());
+//					startActivity(intentMarketAll);
+//				} else {
+//					DocumentsApplication.openPurchaseActivity(this);
+//				}
+//				AnalyticsManager.logEvent("app_love");
 				break;
 			case R.id.action_share:
-
-				String shareText = "I found this file mananger very useful. Give it a try. "
-						+ Utils.getAppShareUri().toString();
-				ShareCompat.IntentBuilder
-						.from(this)
-						.setText(shareText)
-						.setType("text/plain")
-						.setChooserTitle("Share AnExplorer")
-						.startChooser();
-				AnalyticsManager.logEvent("app_share");
+//
+//				String shareText = "I found this file mananger very useful. Give it a try. "
+//						+ Utils.getAppShareUri().toString();
+//				ShareCompat.IntentBuilder
+//						.from(this)
+//						.setText(shareText)
+//						.setType("text/plain")
+//						.setChooserTitle("Share AnExplorer")
+//						.startChooser();
+//				AnalyticsManager.logEvent("app_share");
 				break;
 		}
 	}

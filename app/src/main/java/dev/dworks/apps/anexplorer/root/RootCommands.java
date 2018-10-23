@@ -21,9 +21,6 @@ package dev.dworks.apps.anexplorer.root;
 
 import android.util.Log;
 
-import com.stericson.RootShell.exceptions.RootDeniedException;
-import com.stericson.RootShell.execution.Command;
-import com.stericson.RootShell.execution.Shell;
 import com.stericson.RootTools.RootTools;
 
 import java.io.BufferedReader;
@@ -36,12 +33,6 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.concurrent.Callable;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeoutException;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -78,52 +69,66 @@ public class RootCommands {
         return in;
     }
 
-    public static ArrayList<String> listFiles(String path) {
-        ArrayList<String> listFiles = new ArrayList<>();
+    public static BufferedReader listFiles(String path) {
+        BufferedReader in = null;
 
         try {
-            listFiles = execute("ls -l " + getCommandLineString(path));
+            in = execute("ls -ls " + getCommandLineString(path));
         } catch (Exception e) {
             e.printStackTrace();
         }
 
-        return listFiles;
+        return in;
     }
 
     public static ArrayList<String> listFiles(String path, boolean showhidden) {
         ArrayList<String> mDirContent = new ArrayList<>();
+        BufferedReader in;
 
-        ArrayList<String> listFiles = execute("ls -a " + getCommandLineString(path));
-        for (String line : listFiles){
-            if (!showhidden) {
-                if (line.charAt(0) != '.')
+        try {
+            in = execute("ls -a " + getCommandLineString(path));
+
+            String line;
+            while ((line = in.readLine()) != null) {
+                if (!showhidden) {
+                    if (line.charAt(0) != '.')
+                        mDirContent.add(path + "/" + line);
+                } else {
                     mDirContent.add(path + "/" + line);
-            } else {
-                mDirContent.add(path + "/" + line);
+                }
             }
+        } catch (IOException e) {
+            e.printStackTrace();
         }
 
         return mDirContent;
     }
 
-    public static ArrayList<String> findFiles(String path, String query) {
-        ArrayList<String> listFiles = new ArrayList<>();
+    public static BufferedReader findFiles(String path, String query) {
+        ArrayList<String> mDirContent = new ArrayList<>();
+        BufferedReader in = null;
 
         try {
-            listFiles =  execute("find " + getCommandLineString(path) + " -type f -iname " + '*' + getCommandLineString(query) + '*' + " -exec ls -ls {} \\;");
+            in = execute("find " + getCommandLineString(path) + " -type f -iname " + '*' + getCommandLineString(query) + '*' + " -exec ls -ls {} \\;");
         } catch (Exception e) {
             e.printStackTrace();
         }
 
-        return listFiles;
+        return in;
     }
 
     public static ArrayList<String> findFile(String path, String query) {
         ArrayList<String> mDirContent = new ArrayList<>();
+        BufferedReader in;
 
         try {
-            mDirContent = execute("find " + getCommandLineString(path) + " -type f -iname " + '*' + getCommandLineString(query) + '*' + " -exec ls -a {} \\;");
-        } catch (Exception e) {
+            in = execute("find " + getCommandLineString(path) + " -type f -iname " + '*' + getCommandLineString(query) + '*' + " -exec ls -a {} \\;");
+
+            String line;
+            while ((line = in.readLine()) != null) {
+                mDirContent.add(line);
+            }
+        } catch (IOException e) {
             e.printStackTrace();
         }
 
@@ -300,36 +305,30 @@ public class RootCommands {
         return matcher.find();
     }
 
-    private static synchronized ArrayList<String> execute(String cmd){
-        final CountDownLatch countDownLatch = new CountDownLatch(1);
-        final ArrayList<String> list = new ArrayList<>();
-        final AtomicReference<ArrayList<String>> resultRef = new AtomicReference<>();
-        Command command = new Command(0, cmd) {
-            @Override
-            public void commandOutput(int id, String line) {
-                super.commandOutput(id, line);
-                list.add(line);
-            }
-
-            @Override
-            public void commandTerminated(int id, String reason) {
-                super.commandTerminated(id, reason);
-            }
-
-            @Override
-            public void commandCompleted(int id, int exitcode) {
-                super.commandCompleted(id, exitcode);
-                resultRef.set(list);
-                countDownLatch.countDown();
-            }
-        };
+    private static BufferedReader execute(String cmd) {
+        BufferedReader reader;
         try {
-            RootTools.getShell(true).add(command);
-            countDownLatch.await();
-        } catch (IOException | RootDeniedException | TimeoutException | InterruptedException e) {
+            Process process = Runtime.getRuntime().exec("su");
+            DataOutputStream os = new DataOutputStream(
+                    process.getOutputStream());
+            os.writeBytes(cmd + "\n");
+            os.writeBytes("exit\n");
+            reader = new BufferedReader(new InputStreamReader(
+                    process.getInputStream()));
+            String err = (new BufferedReader(new InputStreamReader(
+                    process.getErrorStream()))).readLine();
+            os.flush();
+
+            if (process.waitFor() != 0 || (!"".equals(err) && null != err)
+                    && !containsIllegals(err)) {
+                Log.e("Root Error, cmd: " + cmd, err);
+                return null;
+            }
+            return reader;
+        } catch (Exception e) {
             e.printStackTrace();
         }
-        return resultRef.get();
+        return null;
     }
 
     private static InputStream openFile(String cmd) {
@@ -388,14 +387,18 @@ public class RootCommands {
     }
 
     public static String[] getFileProperties(File file) {
+        BufferedReader in;
         String[] info = null;
+        String line;
 
         try {
-            ArrayList<String> listFiles = execute("ls -l "
+            in = execute("ls -l "
                     + getCommandLineString(file.getAbsolutePath()));
-            for (String line : listFiles){
+
+            while ((line = in.readLine()) != null) {
                 info = getAttrs(line);
             }
+            in.close();
         } catch (Exception e) {
             e.printStackTrace();
         }

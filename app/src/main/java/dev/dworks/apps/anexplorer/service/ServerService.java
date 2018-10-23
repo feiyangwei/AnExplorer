@@ -9,7 +9,6 @@ import android.os.Bundle;
 import android.service.quicksettings.Tile;
 import android.service.quicksettings.TileService;
 
-import dev.dworks.apps.anexplorer.BuildConfig;
 import dev.dworks.apps.anexplorer.misc.ConnectionUtils;
 
 import static dev.dworks.apps.anexplorer.misc.ConnectionUtils.ACTION_START_FTPSERVER;
@@ -31,12 +30,6 @@ public class ServerService extends TileService {
         } else {
             updateTileState(Tile.STATE_INACTIVE);
         }
-    }
-
-    @Override
-    public void onStopListening() {
-        super.onStopListening();
-        updateTileState(Tile.STATE_INACTIVE);
     }
 
     private void updateTileState(int state) {
@@ -70,7 +63,9 @@ public class ServerService extends TileService {
                 break;
             case Tile.STATE_ACTIVE:
                 stopServer();
+            default:
                 updateTileState(Tile.STATE_INACTIVE);
+                break;
         }
     }
 
@@ -83,7 +78,6 @@ public class ServerService extends TileService {
         Intent intent = new Intent(ACTION_START_FTPSERVER);
         Bundle args = new Bundle();
         intent.putExtras(args);
-        intent.setPackage(BuildConfig.APPLICATION_ID);
         sendBroadcast(intent);
     }
 
@@ -91,7 +85,6 @@ public class ServerService extends TileService {
         Intent intent = new Intent(ACTION_STOP_FTPSERVER);
         Bundle args = new Bundle();
         intent.putExtras(args);
-        intent.setPackage(BuildConfig.APPLICATION_ID);
         sendBroadcast(intent);
     }
 }

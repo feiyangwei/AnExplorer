@@ -66,7 +66,6 @@ public class HomeItem extends FrameLayout {
         icon.setImageDrawable(root.loadDrawerIcon(mContext));
         title.setText(root.title);
 
-
         // Show available space if no summary
         String summaryText = root.summary;
         if (TextUtils.isEmpty(summaryText) && root.availableBytes >= 0) {

@@ -31,6 +31,7 @@ import android.graphics.drawable.LayerDrawable;
 import android.os.Bundle;
 import android.preference.Preference;
 import androidx.vectordrawable.graphics.drawable.VectorDrawableCompat;
+import androidx.appcompat.app.AlertDialog;
 import android.util.AttributeSet;
 import android.util.TypedValue;
 import android.view.LayoutInflater;
@@ -39,15 +40,12 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import dev.dworks.apps.anexplorer.R;
-import dev.dworks.apps.anexplorer.common.DialogBuilder;
 import dev.dworks.apps.anexplorer.misc.ColorPalette;
 import dev.dworks.apps.anexplorer.misc.CrashReportingManager;
-import dev.dworks.apps.anexplorer.misc.Palette;
 import dev.dworks.apps.anexplorer.misc.Utils;
 import dev.dworks.apps.anexplorer.setting.SettingsActivity;
 
-import static dev.dworks.apps.anexplorer.DocumentsApplication.isWatch;
-import static dev.dworks.apps.anexplorer.common.DialogFragment.tintButtons;
+import static dev.dworks.apps.anexplorer.DialogFragment.tintButtons;
 
 
 /**
@@ -188,10 +186,6 @@ public class MaterialColorPreference extends Preference {
         @Override
         public void onActivityCreated(Bundle savedInstanceState) {
             super.onActivityCreated(savedInstanceState);
-            if(null != savedInstanceState) {
-                dismiss();
-                return;
-            }
             if(!getShowsDialog()){
                 return;
             }
@@ -211,8 +205,8 @@ public class MaterialColorPreference extends Preference {
         public Dialog onCreateDialog(Bundle savedInstanceState) {
             final Context context = getActivity();
 
-            final DialogBuilder builder = new DialogBuilder(context);
-            final LayoutInflater dialogInflater = LayoutInflater.from(context);
+            final AlertDialog.Builder builder = new AlertDialog.Builder(context);
+            final LayoutInflater dialogInflater = LayoutInflater.from(builder.getContext());
 
             final View rootView = dialogInflater.inflate(R.layout.layout_color_preference, null, false);
 

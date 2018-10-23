@@ -80,7 +80,7 @@
                     android:layout_height="wrap_content"
                     android:paddingEnd="8dp"
                     android:paddingRight="8dp"
-                    android:text="Type:"
+                    android:text="类型:"
                     android:textSize="18sp"
                     android:textStyle="bold" />
 
@@ -105,7 +105,7 @@
                     android:layout_height="wrap_content"
                     android:paddingEnd="8dp"
                     android:paddingRight="8dp"
-                    android:text="Size:"
+                    android:text="大小:"
                     android:textSize="18sp"
                     android:textStyle="bold" />
 
@@ -132,7 +132,7 @@
                     android:layout_height="wrap_content"
                     android:paddingEnd="8dp"
                     android:paddingRight="8dp"
-                    android:text="Contents:"
+                    android:text="内容:"
                     android:textSize="18sp"
                     android:textStyle="bold" />
 
@@ -157,7 +157,7 @@
                     android:layout_height="wrap_content"
                     android:paddingEnd="8dp"
                     android:paddingRight="8dp"
-                    android:text="Last modified:"
+                    android:text="最近更新:"
                     android:textSize="18sp"
                     android:textStyle="bold" />
 
@@ -183,7 +183,7 @@
                     android:layout_height="wrap_content"
                     android:paddingEnd="8dp"
                     android:paddingRight="8dp"
-                    android:text="Path:"
+                    android:text="路径:"
                     android:textSize="18sp"
                     android:textStyle="bold" />
 

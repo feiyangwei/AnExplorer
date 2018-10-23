@@ -19,10 +19,9 @@ package dev.dworks.apps.anexplorer;
 
 import android.annotation.TargetApi;
 import android.app.Activity;
-
-import androidx.fragment.app.Fragment;
-import androidx.fragment.app.FragmentManager;
-import androidx.fragment.app.FragmentTransaction;
+import android.app.Dialog;
+import android.app.Fragment;
+import android.app.FragmentManager;
 import android.content.ActivityNotFoundException;
 import android.content.ClipData;
 import android.content.ComponentName;
@@ -43,15 +42,17 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
-
-import androidx.appcompat.app.ActionBarDrawerToggle;
+import android.provider.MediaStore;
 import androidx.core.content.ContextCompat;
+import androidx.core.content.FileProvider;
+import androidx.core.view.MenuItemCompat;
 import androidx.core.view.ViewCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
+import androidx.drawerlayout.widget.DrawerLayout.DrawerListener;
+import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.appcompat.widget.SearchView;
 import androidx.appcompat.widget.Toolbar;
-
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.Gravity;
@@ -60,7 +61,9 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewGroup.LayoutParams;
 import android.view.WindowManager;
+import android.widget.AbsListView;
 import android.widget.AdapterView;
 import android.widget.BaseAdapter;
 import android.widget.FrameLayout;
@@ -82,13 +85,9 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Locale;
-import java.util.Set;
 import java.util.concurrent.Executor;
 
 import dev.dworks.apps.anexplorer.archive.DocumentArchiveHelper;
-import dev.dworks.apps.anexplorer.cast.CastUtils;
-import dev.dworks.apps.anexplorer.cast.Casty;
-import dev.dworks.apps.anexplorer.common.RootsCommonFragment;
 import dev.dworks.apps.anexplorer.fragment.ConnectionsFragment;
 import dev.dworks.apps.anexplorer.fragment.CreateDirectoryFragment;
 import dev.dworks.apps.anexplorer.fragment.CreateFileFragment;
@@ -97,6 +96,7 @@ import dev.dworks.apps.anexplorer.fragment.HomeFragment;
 import dev.dworks.apps.anexplorer.fragment.MoveFragment;
 import dev.dworks.apps.anexplorer.fragment.PickFragment;
 import dev.dworks.apps.anexplorer.fragment.RecentsCreateFragment;
+import dev.dworks.apps.anexplorer.fragment.RootsFragment;
 import dev.dworks.apps.anexplorer.fragment.SaveFragment;
 import dev.dworks.apps.anexplorer.fragment.ServerFragment;
 import dev.dworks.apps.anexplorer.libcore.io.IoUtils;
@@ -110,10 +110,11 @@ import dev.dworks.apps.anexplorer.misc.FileUtils;
 import dev.dworks.apps.anexplorer.misc.IntentUtils;
 import dev.dworks.apps.anexplorer.misc.MimePredicate;
 import dev.dworks.apps.anexplorer.misc.PermissionUtil;
+import dev.dworks.apps.anexplorer.misc.PinViewHelper;
+import dev.dworks.apps.anexplorer.misc.PinViewHelper.PINDialogFragment;
 import dev.dworks.apps.anexplorer.misc.ProviderExecutor;
 import dev.dworks.apps.anexplorer.misc.RootsCache;
 import dev.dworks.apps.anexplorer.misc.SAFManager;
-import dev.dworks.apps.anexplorer.misc.SecurityHelper;
 import dev.dworks.apps.anexplorer.misc.SystemBarTintManager;
 import dev.dworks.apps.anexplorer.misc.Utils;
 import dev.dworks.apps.anexplorer.model.DocumentInfo;
@@ -128,11 +129,8 @@ import dev.dworks.apps.anexplorer.provider.MediaDocumentsProvider;
 import dev.dworks.apps.anexplorer.provider.RecentsProvider;
 import dev.dworks.apps.anexplorer.provider.RecentsProvider.RecentColumns;
 import dev.dworks.apps.anexplorer.provider.RecentsProvider.ResumeColumns;
-import dev.dworks.apps.anexplorer.server.SimpleWebServer;
-import dev.dworks.apps.anexplorer.server.WebServer;
 import dev.dworks.apps.anexplorer.setting.SettingsActivity;
 import dev.dworks.apps.anexplorer.ui.DirectoryContainerView;
-import dev.dworks.apps.anexplorer.ui.DrawerLayoutHelper;
 import dev.dworks.apps.anexplorer.ui.FloatingActionsMenu;
 import dev.dworks.apps.anexplorer.ui.fabs.SimpleMenuListenerAdapter;
 
@@ -145,7 +143,6 @@ import static dev.dworks.apps.anexplorer.BaseActivity.State.ACTION_OPEN_TREE;
 import static dev.dworks.apps.anexplorer.BaseActivity.State.MODE_GRID;
 import static dev.dworks.apps.anexplorer.BaseActivity.State.MODE_LIST;
 import static dev.dworks.apps.anexplorer.DocumentsApplication.isTelevision;
-import static dev.dworks.apps.anexplorer.DocumentsApplication.isWatch;
 import static dev.dworks.apps.anexplorer.fragment.DirectoryFragment.ANIM_DOWN;
 import static dev.dworks.apps.anexplorer.fragment.DirectoryFragment.ANIM_NONE;
 import static dev.dworks.apps.anexplorer.fragment.DirectoryFragment.ANIM_SIDE;
@@ -154,11 +151,10 @@ import static dev.dworks.apps.anexplorer.misc.AnalyticsManager.FILE_COUNT;
 import static dev.dworks.apps.anexplorer.misc.AnalyticsManager.FILE_MOVE;
 import static dev.dworks.apps.anexplorer.misc.AnalyticsManager.FILE_TYPE;
 import static dev.dworks.apps.anexplorer.misc.SAFManager.ADD_STORAGE_REQUEST_CODE;
-import static dev.dworks.apps.anexplorer.misc.SecurityHelper.REQUEST_CONFIRM_CREDENTIALS;
 import static dev.dworks.apps.anexplorer.misc.Utils.EXTRA_ROOT;
 import static dev.dworks.apps.anexplorer.provider.ExternalStorageProvider.isDownloadAuthority;
 
-public class DocumentsActivity extends BaseActivity implements MenuItem.OnMenuItemClickListener {
+public class DocumentsActivity extends BaseActivity {
 
     private static final String EXTRA_STATE = "state";
     private static final String EXTRA_AUTHENTICATED = "authenticated";
@@ -177,7 +173,7 @@ public class DocumentsActivity extends BaseActivity implements MenuItem.OnMenuIt
     private Toolbar mToolbar;
     private Spinner mToolbarStack;
 
-    private DrawerLayoutHelper mDrawerLayoutHelper;
+    private DrawerLayout mDrawerLayout;
     private ActionBarDrawerToggle mDrawerToggle;
     private View mRootsContainer;
     private View mInfoContainer;
@@ -198,7 +194,6 @@ public class DocumentsActivity extends BaseActivity implements MenuItem.OnMenuIt
     private boolean mActionMode;
     private FloatingActionsMenu mActionMenu;
     private RootInfo mParentRoot;
-    private boolean SAFPermissionRequested;
 
     @TargetApi(Build.VERSION_CODES.LOLLIPOP)
     @Override
@@ -260,46 +255,42 @@ public class DocumentsActivity extends BaseActivity implements MenuItem.OnMenuIt
 
         if (!mShowAsDialog) {
             // Non-dialog means we have a drawer
-            mDrawerLayoutHelper = new DrawerLayoutHelper(findViewById(R.id.drawer_layout));
-            View view = findViewById(R.id.drawer_layout);
-            if(view instanceof DrawerLayout) {
-                DrawerLayout mDrawerLayout = (DrawerLayout) view;
+            mDrawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
 
-                mDrawerToggle = new ActionBarDrawerToggle(
-                        this, mDrawerLayout, mToolbar, R.string.drawer_open, R.string.drawer_close);
-                mDrawerLayout.addDrawerListener(mDrawerToggle);
-                mDrawerToggle.syncState();
-                lockInfoContainter();
-            }
+            mDrawerToggle = new ActionBarDrawerToggle(this, mDrawerLayout, mToolbar, R.string.drawer_open, R.string.drawer_close);
+            mDrawerLayout.setDrawerListener(mDrawerListener);
+            //mDrawerLayout.setDrawerShadow(R.drawable.ic_drawer_shadow, GravityCompat.START);
+            lockInfoContainter();
         }
 
         changeActionBarColor();
+        //initProtection();
 
         // Hide roots when we're managing a specific root
         if (mState.action == ACTION_MANAGE) {
             if (mShowAsDialog) {
                 findViewById(R.id.container_roots).setVisibility(View.GONE);
             } else {
-                mDrawerLayoutHelper.setDrawerLockMode(DrawerLayout.LOCK_MODE_LOCKED_CLOSED);
+                mDrawerLayout.setDrawerLockMode(DrawerLayout.LOCK_MODE_LOCKED_CLOSED);
             }
         }
 
         if (mState.action == ACTION_CREATE) {
             final String mimeType = getIntent().getType();
             final String title = getIntent().getStringExtra(IntentUtils.EXTRA_TITLE);
-            SaveFragment.show(getSupportFragmentManager(), mimeType, title);
+            SaveFragment.show(getFragmentManager(), mimeType, title);
         } else if (mState.action == ACTION_OPEN_TREE) {
-            PickFragment.show(getSupportFragmentManager());
+            PickFragment.show(getFragmentManager());
         }
 
         if (mState.action == ACTION_BROWSE) {
             final Intent moreApps = new Intent(getIntent());
             moreApps.setComponent(null);
             moreApps.setPackage(null);
-            RootsCommonFragment.show(getSupportFragmentManager(), moreApps);
+            RootsFragment.show(getFragmentManager(), moreApps);
         } else if (mState.action == ACTION_OPEN || mState.action == ACTION_CREATE
                 || mState.action == ACTION_GET_CONTENT || mState.action == ACTION_OPEN_TREE) {
-            RootsCommonFragment.show(getSupportFragmentManager(), new Intent());
+            RootsFragment.show(getFragmentManager(), new Intent());
         }
 
         if (!mState.restored) {
@@ -332,9 +323,7 @@ public class DocumentsActivity extends BaseActivity implements MenuItem.OnMenuIt
         if(!PermissionUtil.hasStoragePermission(this)) {
             requestStoragePermissions();
         }
-        if(!Utils.isOtherBuild()) {
-            checkLatestVersion();
-        }
+        //checkLatestVersion();
     }
 
     private void checkLatestVersion() {
@@ -348,8 +337,7 @@ public class DocumentsActivity extends BaseActivity implements MenuItem.OnMenuIt
 
     @Override
     protected void onNewIntent(Intent intent) {
-        Set<String> categories = intent.getCategories();
-        if(null != categories && categories.contains(BROWSABLE)) {
+        if(intent.getCategories().contains(BROWSABLE)) {
             try {
                 // Here we pass the response to the SDK which will automatically
                 // complete the authentication process
@@ -376,7 +364,7 @@ public class DocumentsActivity extends BaseActivity implements MenuItem.OnMenuIt
                     mRoots.updateAsync();
                     final RootInfo root = getCurrentRoot();
                     if(root.isHome()){
-                        HomeFragment homeFragment = HomeFragment.get(getSupportFragmentManager());
+                        HomeFragment homeFragment = HomeFragment.get(getFragmentManager());
                         if(null != homeFragment) {
                             homeFragment.reloadData();
                         }
@@ -387,11 +375,11 @@ public class DocumentsActivity extends BaseActivity implements MenuItem.OnMenuIt
     }
 
     private void lockInfoContainter() {
-        if(mDrawerLayoutHelper.isDrawerOpen(mInfoContainer)){
-            mDrawerLayoutHelper.closeDrawer(mInfoContainer);
+        if(mDrawerLayout.isDrawerOpen(mInfoContainer)){
+            mDrawerLayout.closeDrawer(mInfoContainer);
         }
 
-        mDrawerLayoutHelper.setDrawerLockMode(DrawerLayout.LOCK_MODE_LOCKED_CLOSED, mInfoContainer);
+        mDrawerLayout.setDrawerLockMode(DrawerLayout.LOCK_MODE_LOCKED_CLOSED, getGravity());
     }
 
     @TargetApi(Build.VERSION_CODES.JELLY_BEAN_MR1)
@@ -413,15 +401,35 @@ public class DocumentsActivity extends BaseActivity implements MenuItem.OnMenuIt
 
     private void initProtection() {
 
-		if(mAuthenticated || !SettingsActivity.isSecurityEnabled(this)){
+		if(mAuthenticated || !SettingsActivity.isPinEnabled(this)){
 			return;
 		}
+        final Dialog d = new Dialog(this, R.style.DocumentsTheme_DailogPIN);
+        d.setContentView(new PinViewHelper((LayoutInflater)getSystemService(Context.LAYOUT_INFLATER_SERVICE), null, null) {
+            public void onEnter(String password) {
+                super.onEnter(password);
+                if (SettingsActivity.checkPin(DocumentsActivity.this, password)) {
+                	mAuthenticated = true;
+                	d.dismiss();
+                }
+                else {
+                    showError(R.string.incorrect_pin);
+                }
+            }
 
-		if(Utils.hasMarshmallow()) {
-            SecurityHelper securityHelper = new SecurityHelper(this);
-            securityHelper.authenticate("AnExplorer", "Use device pattern to continue");
-        }
+            public void onCancel() {
+                super.onCancel();
+                finish();
+                d.dismiss();
+            }
+        }.getView(), new ViewGroup.LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT));
+        
+        PINDialogFragment pinFragment = new PINDialogFragment();
+        pinFragment.setDialog(d);
+        pinFragment.setCancelable(false);
+        pinFragment.show(getFragmentManager(), "PIN Dialog");
 	}
+
 
     private void buildDefaultState() {
         mState = new State();
@@ -463,19 +471,6 @@ public class DocumentsActivity extends BaseActivity implements MenuItem.OnMenuIt
                 | SettingsActivity.getDisplayAdvancedDevices(this);
         
         mState.rootMode = SettingsActivity.getRootMode(this);
-    }
-
-    @Override
-    public boolean onMenuItemClick(MenuItem item) {
-        if(menuAction(item)){
-            closeDrawer();
-            return true;
-        }
-        return false;
-    }
-
-    public void closeDrawer(){
-        mDrawerLayoutHelper.closeDrawer(Utils.getActionDrawer(this));
     }
 
     private class RestoreRootTask extends AsyncTask<Void, Void, RootInfo> {
@@ -612,21 +607,61 @@ public class DocumentsActivity extends BaseActivity implements MenuItem.OnMenuIt
             mState.showHiddenFiles = SettingsActivity.getDisplayFileHidden(this);
             invalidateMenu();
         }
-        initProtection();
+    }
+
+    private DrawerListener mDrawerListener = new DrawerListener() {
+        @Override
+        public void onDrawerSlide(View drawerView, float slideOffset) {
+            mDrawerToggle.onDrawerSlide(drawerView, slideOffset);
+        }
+
+        @Override
+        public void onDrawerOpened(View drawerView) {
+            if(!mInfoContainer.equals(drawerView) && mDrawerLayout.isDrawerOpen(mInfoContainer)){
+                mDrawerLayout.closeDrawer(mInfoContainer);
+            }
+            mDrawerToggle.onDrawerOpened(drawerView);
+            updateActionBar();
+            invalidateMenu();
+        }
+
+        @Override
+        public void onDrawerClosed(View drawerView) {
+            lockInfoContainter();
+            mDrawerToggle.onDrawerClosed(drawerView);
+            updateActionBar();
+            invalidateMenu();
+        }
+
+        @Override
+        public void onDrawerStateChanged(int newState) {
+            mDrawerToggle.onDrawerStateChanged(newState);
+        }
+    };
+
+    @Override
+    public void onConfigurationChanged(Configuration newConfig) {
+        super.onConfigurationChanged(newConfig);
+        if (mDrawerToggle != null) {
+            mDrawerToggle.onConfigurationChanged(newConfig);
+        }
     }
 
     @Override
     protected void onPostCreate(Bundle savedInstanceState) {
         super.onPostCreate(savedInstanceState);
+        if (mDrawerToggle != null) {
+            mDrawerToggle.syncState();
+        }
         updateActionBar();
     }
 
     public void setRootsDrawerOpen(boolean open) {
         if (!mShowAsDialog) {
             if (open) {
-                mDrawerLayoutHelper.openDrawer(mRootsContainer);
+                mDrawerLayout.openDrawer(mRootsContainer);
             } else {
-                mDrawerLayoutHelper.closeDrawer(mRootsContainer);
+                mDrawerLayout.closeDrawer(mRootsContainer);
             }
         }
     }
@@ -635,8 +670,8 @@ public class DocumentsActivity extends BaseActivity implements MenuItem.OnMenuIt
     	if(!mShowAsDialog){
     		setRootsDrawerOpen(false);
             if (open) {
-                mDrawerLayoutHelper.setDrawerLockMode(DrawerLayout.LOCK_MODE_UNLOCKED, mInfoContainer);
-                mDrawerLayoutHelper.openDrawer(mInfoContainer);
+            	mDrawerLayout.setDrawerLockMode(DrawerLayout.LOCK_MODE_UNLOCKED, mInfoContainer);
+                mDrawerLayout.openDrawer(mInfoContainer);
             } else {
                 lockInfoContainter();
             }
@@ -647,7 +682,7 @@ public class DocumentsActivity extends BaseActivity implements MenuItem.OnMenuIt
         if (mShowAsDialog) {
             return false;
         } else {
-            return mDrawerLayoutHelper.isDrawerOpen(mRootsContainer);
+            return mDrawerLayout.isDrawerOpen(mRootsContainer);
         }
     }
 
@@ -659,6 +694,9 @@ public class DocumentsActivity extends BaseActivity implements MenuItem.OnMenuIt
             //getSupportActionBar().setDisplayHomeAsUpEnabled(showIndicator);
             //mToolbar.setLogo(R.drawable.logo);
             getSupportActionBar().setDisplayShowHomeEnabled(true);
+            if (mDrawerToggle != null) {
+                mDrawerToggle.setDrawerIndicatorEnabled(showIndicator);
+            }
         }
         mToolbar.setNavigationContentDescription(R.string.drawer_open);
         mToolbar.setNavigationOnClickListener(new View.OnClickListener() {
@@ -668,24 +706,40 @@ public class DocumentsActivity extends BaseActivity implements MenuItem.OnMenuIt
             }
         });
 
-        if (mSearchExpanded) {
-            setTitle(null);
+        if (isRootsDrawerOpen()) {
+            //mToolbar.setNavigationIcon(root != null ? root.loadToolbarIcon(mToolbar.getContext()) : null);
+            if (mState.action == ACTION_OPEN || mState.action == ACTION_GET_CONTENT
+                    || mState.action == ACTION_BROWSE || mState.action == ACTION_OPEN_TREE) {
+                //mToolbar.setTitle(R.string.title_open);
+                setTitle(R.string.app_name);
+            } else if (mState.action == DocumentsActivity.State.ACTION_CREATE) {
+                setTitle(R.string.title_save);
+            }
             mToolbarStack.setVisibility(View.GONE);
             mToolbarStack.setAdapter(null);
+
         } else {
-            if (mState.stack.size() <= 1) {
-                if(null != root){
-                    setTitle(root.title);
-                    AnalyticsManager.setCurrentScreen(this, root.derivedTag);
-                }
+            //mToolbar.setNavigationIcon(R.drawable.ic_drawer_glyph);
+
+            if (mSearchExpanded) {
+                setTitle(null);
                 mToolbarStack.setVisibility(View.GONE);
                 mToolbarStack.setAdapter(null);
             } else {
-                setTitle(null);
-                mToolbarStack.setVisibility(View.VISIBLE);
-                mToolbarStack.setAdapter(mStackAdapter);
-                mIgnoreNextNavigation = true;
-                mToolbarStack.setSelection(mStackAdapter.getCount() - 1);
+                if (mState.stack.size() <= 1) {
+                    if(null != root){
+                        setTitle(root.title);
+                        AnalyticsManager.setCurrentScreen(this, root.derivedTag);
+                    }
+                    mToolbarStack.setVisibility(View.GONE);
+                    mToolbarStack.setAdapter(null);
+                } else {
+                    setTitle(null);
+                    mToolbarStack.setVisibility(View.VISIBLE);
+                    mToolbarStack.setAdapter(mStackAdapter);
+                    mIgnoreNextNavigation = true;
+                    mToolbarStack.setSelection(mStackAdapter.getCount() - 1);
+                }
             }
         }
     }
@@ -704,7 +758,7 @@ public class DocumentsActivity extends BaseActivity implements MenuItem.OnMenuIt
         getMenuInflater().inflate(R.menu.activity, menu);
 
         final MenuItem searchMenu = menu.findItem(R.id.menu_search);
-        mSearchView = (SearchView) searchMenu.getActionView();
+        mSearchView = (SearchView) MenuItemCompat.getActionView(searchMenu);
         mSearchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override
             public boolean onQueryTextSubmit(String query) {
@@ -724,7 +778,7 @@ public class DocumentsActivity extends BaseActivity implements MenuItem.OnMenuIt
             }
         });
 
-        searchMenu.setOnActionExpandListener(new MenuItem.OnActionExpandListener() {
+        MenuItemCompat.setOnActionExpandListener(searchMenu, new MenuItemCompat.OnActionExpandListener() {
             @Override
             public boolean onMenuItemActionExpand(MenuItem item) {
                 mSearchExpanded = true;
@@ -768,16 +822,17 @@ public class DocumentsActivity extends BaseActivity implements MenuItem.OnMenuIt
 
     @Override
     public boolean onPrepareOptionsMenu(Menu menu) {
+        super.onPrepareOptionsMenu(menu);
         updateMenuItems(menu);
-        return super.onPrepareOptionsMenu(menu);
+        return true;
     }
 
     public void updateMenuItems(Menu menu){
-        final FragmentManager fm = getSupportFragmentManager();
+        final FragmentManager fm = getFragmentManager();
         final RootInfo root = getCurrentRoot();
         final DocumentInfo cwd = getCurrentDirectory();
 
-        if(isSpecialDevice()) {
+        if(isTelevision()) {
             menu.findItem(R.id.menu_create_dir).setVisible(showActionMenu());
             menu.findItem(R.id.menu_create_file).setVisible(showActionMenu());
         }
@@ -851,28 +906,20 @@ public class DocumentsActivity extends BaseActivity implements MenuItem.OnMenuIt
         // TODO: close any search in-progress when hiding
         search.setVisible(searchVisible);
 
-        settings.setVisible(mState.action != ACTION_MANAGE);
-
-        Utils.inflateActionMenu(this, this, false, root, cwd);
+        //settings.setVisible(mState.action != ACTION_MANAGE);
+        settings.setVisible(false);
     }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         if (mDrawerToggle != null) {
-        	if(mDrawerLayoutHelper.isDrawerOpen(mInfoContainer)){
-                mDrawerLayoutHelper.closeDrawer(mInfoContainer);
+        	if(mDrawerLayout.isDrawerOpen(mInfoContainer)){
+            	mDrawerLayout.closeDrawer(mInfoContainer);
             }
             if(mDrawerToggle.onOptionsItemSelected(item)){
             	return true;
             }
         }
-        if(menuAction(item)){
-            return true;
-        }
-        return super.onOptionsItemSelected(item);
-    }
-
-    public boolean menuAction(MenuItem item) {
 
         final int id = item.getItemId();
         if (id == android.R.id.home) {
@@ -930,8 +977,9 @@ public class DocumentsActivity extends BaseActivity implements MenuItem.OnMenuIt
             AnalyticsManager.logEvent("app_exit");
             android.os.Process.killProcess(android.os.Process.myPid());
             return true;
+        } else {
+            return super.onOptionsItemSelected(item);
         }
-        return false;
     }
 
     private void createFolder() {
@@ -955,7 +1003,7 @@ public class DocumentsActivity extends BaseActivity implements MenuItem.OnMenuIt
         try {
             this.startActivityForResult(Intent.createChooser(intent, "Select a File to Upload"), UPLOAD_FILE);
         } catch(android.content.ActivityNotFoundException e) {
-            Utils.showError(this, R.string.upload_error);
+            showError(R.string.upload_error);
         }
         Bundle params = new Bundle();
         params.putString(FILE_TYPE, "file");
@@ -974,7 +1022,7 @@ public class DocumentsActivity extends BaseActivity implements MenuItem.OnMenuIt
      */
     private void setUserSortOrder(int sortOrder) {
         mState.userSortOrder = sortOrder;
-        Fragment fragment = DirectoryFragment.get(getSupportFragmentManager());
+        Fragment fragment = DirectoryFragment.get(getFragmentManager());
         if(fragment instanceof DirectoryFragment) {
             final DirectoryFragment directory = (DirectoryFragment) fragment;
             if (directory != null) {
@@ -988,7 +1036,7 @@ public class DocumentsActivity extends BaseActivity implements MenuItem.OnMenuIt
      */
     private void setUserMode(int mode) {
         mState.userMode = mode;
-        Fragment fragment = DirectoryFragment.get(getSupportFragmentManager());
+        Fragment fragment = DirectoryFragment.get(getFragmentManager());
         if(fragment instanceof DirectoryFragment) {
             final DirectoryFragment directory = (DirectoryFragment) fragment;
             if (directory != null) {
@@ -1001,7 +1049,7 @@ public class DocumentsActivity extends BaseActivity implements MenuItem.OnMenuIt
      * refresh Data currently shown
      */
     private void refreshData() {
-        Fragment fragment = DirectoryFragment.get(getSupportFragmentManager());
+        Fragment fragment = DirectoryFragment.get(getFragmentManager());
         if(fragment instanceof DirectoryFragment) {
             final DirectoryFragment directory = (DirectoryFragment) fragment;
             if (directory != null) {
@@ -1012,7 +1060,7 @@ public class DocumentsActivity extends BaseActivity implements MenuItem.OnMenuIt
 
 
     public void setPending(boolean pending) {
-        final SaveFragment save = SaveFragment.get(getSupportFragmentManager());
+        final SaveFragment save = SaveFragment.get(getFragmentManager());
         if (save != null) {
             save.setPending(pending);
         }
@@ -1026,7 +1074,7 @@ public class DocumentsActivity extends BaseActivity implements MenuItem.OnMenuIt
     @Override
     public void onBackPressed() {
         if(isRootsDrawerOpen() && !mShowAsDialog){
-            mDrawerLayoutHelper.closeDrawer(mRootsContainer);
+            mDrawerLayout.closeDrawer(mRootsContainer);
             return;
         }
         if(mSearchExpanded){
@@ -1219,7 +1267,7 @@ public class DocumentsActivity extends BaseActivity implements MenuItem.OnMenuIt
         if(!Utils.isActivityAlive(DocumentsActivity.this)){
             return;
         }
-        final FragmentManager fm = getSupportFragmentManager();
+        final FragmentManager fm = getFragmentManager();
         final RootInfo root = getCurrentRoot();
         DocumentInfo cwd = getCurrentDirectory();
 
@@ -1242,6 +1290,7 @@ public class DocumentsActivity extends BaseActivity implements MenuItem.OnMenuIt
         if(!SettingsActivity.getFolderAnimation(this)){
             anim = 0;
         }
+        mDirectoryContainer.setDrawDisappearingFirst(anim == ANIM_DOWN);
 
         if (cwd == null) {
             // No directory means recents
@@ -1255,10 +1304,10 @@ public class DocumentsActivity extends BaseActivity implements MenuItem.OnMenuIt
                 } else if(null != root && root.isServerStorage()){
                     ServerFragment.show(fm, root);
                 } else {
-                    DirectoryFragment.showRecentsOpen(fm, anim, root);
+                    DirectoryFragment.showRecentsOpen(fm, anim);
 
                     // Start recents in grid when requesting visual things
-                    final boolean visualMimes = !isWatch();//MimePredicate.mimeMatches(MimePredicate.VISUAL_MIMES, mState.acceptMimes);
+                    final boolean visualMimes = true;//MimePredicate.mimeMatches(MimePredicate.VISUAL_MIMES, mState.acceptMimes);
                     mState.userMode = visualMimes ? MODE_GRID : MODE_LIST;
                     mState.derivedMode = mState.userMode;
                 }
@@ -1296,7 +1345,7 @@ public class DocumentsActivity extends BaseActivity implements MenuItem.OnMenuIt
             move.setReplaceTarget(cwd);
         }
 
-        final RootsCommonFragment roots = RootsCommonFragment.get(fm);
+        final RootsFragment roots = RootsFragment.get(fm);
         if (roots != null) {
             roots.onCurrentRootChanged();
         }
@@ -1304,28 +1353,7 @@ public class DocumentsActivity extends BaseActivity implements MenuItem.OnMenuIt
         updateActionBar();
         invalidateMenu();
         dumpStack();
-
-        if(!Utils.isOtherBuild() && !isSpecialDevice()){
-            AppRate.with(this, mRateContainer).listener(mOnShowListener).checkAndShow();
-        }
     }
-
-    private AppRate.OnShowListener mOnShowListener = new AppRate.OnShowListener() {
-        @Override
-        public void onRateAppShowing() {
-            // View is shown
-        }
-
-        @Override
-        public void onRateAppDismissed() {
-            // User has dismissed it
-        }
-
-        @Override
-        public void onRateAppClicked() {
-            AnalyticsManager.logEvent("app_rate");
-        }
-    };
 
     public void onStackPicked(DocumentStack stack) {
         try {
@@ -1379,6 +1407,7 @@ public class DocumentsActivity extends BaseActivity implements MenuItem.OnMenuIt
             try {
                 final Uri uri = DocumentsContract.buildDocumentUri(
                         mRoot.authority, mRoot.documentId);
+                Log.e("BGA", mRoot.authority+"===="+mRoot.documentId);
                 return DocumentInfo.fromUri(getContentResolver(), uri);
             } catch (FileNotFoundException e) {
                 Log.w(TAG, "Failed to find root", e);
@@ -1441,7 +1470,7 @@ public class DocumentsActivity extends BaseActivity implements MenuItem.OnMenuIt
         @Override
         protected void onPostExecute(Boolean result) {
             if (result) {
-                Utils.showError(DocumentsActivity.this, R.string.upload_error);
+                showError(R.string.upload_error);
             }
             setPending(false);
         }
@@ -1485,19 +1514,13 @@ public class DocumentsActivity extends BaseActivity implements MenuItem.OnMenuIt
                 new UploadFileTask(uri, name,
                         FileUtils.getTypeForName(name)).executeOnExecutor(getCurrentExecutor());
             }
-        } else if (requestCode == REQUEST_CONFIRM_CREDENTIALS) {
-            if (resultCode == RESULT_OK) {
-                mAuthenticated = true;
-            } else {
-                finish();
-            }
         } else {
             super.onActivityResult(requestCode, resultCode, data);
         }
     }
 
     public void onDocumentPicked(DocumentInfo doc) {
-        final FragmentManager fm = getSupportFragmentManager();
+        final FragmentManager fm = getFragmentManager();
         if (doc.isDirectory() || DocumentArchiveHelper.isSupportedArchiveType(doc.mimeType)) {
             mState.stack.push(doc);
             mState.stackTouched = true;
@@ -1512,18 +1535,17 @@ public class DocumentsActivity extends BaseActivity implements MenuItem.OnMenuIt
         } else if (mState.action == ACTION_BROWSE) {
 
             // Fall back to viewing
-            final RootInfo rootInfo = getCurrentRoot();
             final Intent view = new Intent(Intent.ACTION_VIEW);
             view.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             view.setFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION
                     | Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
-            if(RootInfo.isMedia(rootInfo)){
+            if(RootInfo.isMedia(getCurrentRoot())){
                 view.setDataAndType(MediaDocumentsProvider.getMediaUriForDocumentId(doc.documentId), doc.mimeType);
             } else {
                 Uri contentUri = null;
-                if((rootInfo.isStorage() || doc.isMedia()) && !TextUtils.isEmpty(doc.path)){
-                    contentUri = FileUtils.getContentUriFromFilePath(this, new File(doc.path).getAbsolutePath());
-                }
+//                if(getCurrentRoot().isExternalStorage() && !TextUtils.isEmpty(doc.path)){
+//                    contentUri = FileUtils.getContentUriFromFilePath(this, new File(doc.path).getAbsolutePath());
+//                }
                 if(null == contentUri){
                     contentUri = doc.derivedUri;
                 }
@@ -1544,20 +1566,13 @@ public class DocumentsActivity extends BaseActivity implements MenuItem.OnMenuIt
                 //TODO: This temporarily fixes crash when the Activity that is opened is not
                 // exported gives java.lang.SecurityException: Permission Denial:
                 try {
-                    Casty casty =  DocumentsApplication.getInstance().getCasty();
-                    if(casty.isConnected() && doc.isMedia()){
-                        CastUtils.addToQueue(casty,
-                                CastUtils.buildMediaInfo(doc, getRoots().getPrimaryRoot()));
-                        invalidateMenu();
-                    } else {
-                        startActivity(view);
-                    }
+                    startActivity(view);
                 } catch (Exception e){
                     CrashReportingManager.logException(e);
                 }
             }
             else{
-                Utils.showError(this, R.string.toast_no_application);
+                showError(R.string.toast_no_application);
             }
         } else if (mState.action == ACTION_CREATE) {
             // Replace selected file
@@ -1583,13 +1598,13 @@ public class DocumentsActivity extends BaseActivity implements MenuItem.OnMenuIt
                     try {
                         startActivity(view);
                     } catch (ActivityNotFoundException ex2) {
-                        Utils.showError(this, R.string.toast_no_application);
+                        showError(R.string.toast_no_application);
                         CrashReportingManager.logException(ex2);
                     }
                 }
             }
             else{
-                Utils.showError(this, R.string.toast_no_application);
+                showError(R.string.toast_no_application);
             }
         }
     }
@@ -1732,7 +1747,7 @@ public class DocumentsActivity extends BaseActivity implements MenuItem.OnMenuIt
             } else {
                 final DocumentInfo cwd = getCurrentDirectory();
                 if(!isSAFIssue(cwd.documentId)) {
-                    Utils.showError(DocumentsActivity.this, R.string.save_error);
+                    showError(R.string.save_error);
                 }
             }
             setPending(false);
@@ -1837,17 +1852,17 @@ public class DocumentsActivity extends BaseActivity implements MenuItem.OnMenuIt
             }
             if (result){
                 //if(!isSAFIssue(toDoc.documentId)){
-                Utils.showError(DocumentsActivity.this, R.string.save_error);
+                    showError(R.string.save_error);
                 //}
             }
-            MoveFragment.hide(getSupportFragmentManager());
+            MoveFragment.hide(getFragmentManager());
             setMovePending(false);
             refreshData();
         }
     }
 
     public void setMovePending(boolean pending) {
-        final MoveFragment move = MoveFragment.get(getSupportFragmentManager());
+        final MoveFragment move = MoveFragment.get(getFragmentManager());
         if (move != null) {
             move.setPending(pending);
         }
@@ -1870,7 +1885,7 @@ public class DocumentsActivity extends BaseActivity implements MenuItem.OnMenuIt
 
     private void changeActionBarColor() {
 
-        if(isSpecialDevice()){
+        if(isTelevision()){
             return;
         }
 
@@ -1918,7 +1933,7 @@ public class DocumentsActivity extends BaseActivity implements MenuItem.OnMenuIt
 
     public void invalidateMenu(){
         supportInvalidateOptionsMenu();
-        mActionMenu.setVisibility(!isSpecialDevice() && showActionMenu() ? View.VISIBLE : View.GONE);
+        mActionMenu.setVisibility(!isTelevision() && showActionMenu() ? View.VISIBLE : View.GONE);
     }
 
     @TargetApi(Build.VERSION_CODES.LOLLIPOP)
@@ -1971,13 +1986,9 @@ public class DocumentsActivity extends BaseActivity implements MenuItem.OnMenuIt
         int defaultColor = SettingsActivity.getPrimaryColor(this);
         ViewCompat.setNestedScrollingEnabled(currentView, true);
         mActionMenu.show();
-        mActionMenu.setVisibility(!isSpecialDevice() && showActionMenu() ? View.VISIBLE : View.GONE);
+        mActionMenu.setVisibility(!isTelevision() && showActionMenu() ? View.VISIBLE : View.GONE);
         mActionMenu.setBackgroundTintList(SettingsActivity.getAccentColor());
         mActionMenu.setSecondaryBackgroundTintList(Utils.getActionButtonColor(defaultColor));
-    }
-
-    public boolean isSpecialDevice() {
-        return isTelevision() || isWatch();
     }
 
     private boolean showActionMenu() {
@@ -2015,12 +2026,4 @@ public class DocumentsActivity extends BaseActivity implements MenuItem.OnMenuIt
             return false;
         }
     };
-
-    public void setSAFPermissionRequested(boolean SAFPermissionRequested) {
-        this.SAFPermissionRequested = SAFPermissionRequested;
-    }
-
-    public boolean getSAFPermissionRequested() {
-        return SAFPermissionRequested;
-    }
 }

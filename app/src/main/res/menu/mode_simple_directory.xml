@@ -36,12 +36,12 @@
         android:id="@+id/menu_select_all"
         android:icon="@drawable/ic_menu_select_all"
         support:showAsAction="always"
-        android:title="Select All"/>
+        android:title="全选"/>
     <item
         android:id="@+id/menu_compress"
         android:icon="@drawable/ic_menu_compressed"
         support:showAsAction="ifRoom"
-        android:title="Compress"
+        android:title="压缩"
         android:visible="false"/>
 
 </menu>

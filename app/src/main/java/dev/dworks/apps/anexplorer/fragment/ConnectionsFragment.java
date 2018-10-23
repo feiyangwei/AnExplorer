@@ -1,34 +1,40 @@
 package dev.dworks.apps.anexplorer.fragment;
 
+import android.app.FragmentManager;
+import android.app.FragmentTransaction;
+import android.app.LoaderManager;
 import android.content.Context;
+import android.content.CursorLoader;
 import android.content.DialogInterface;
+import android.content.Loader;
+import android.content.res.ColorStateList;
 import android.content.res.Resources;
 import android.database.Cursor;
+import android.graphics.drawable.Drawable;
+import android.graphics.drawable.InsetDrawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.BaseColumns;
 import android.support.design.internal.NavigationMenu;
-
+import com.google.android.material.snackbar.Snackbar;
+import androidx.appcompat.app.AlertDialog;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
+import android.widget.ListView;
 import android.widget.PopupMenu;
 
-import androidx.fragment.app.FragmentManager;
-import androidx.fragment.app.FragmentTransaction;
-import androidx.loader.content.CursorLoader;
 import dev.dworks.apps.anexplorer.BaseActivity;
+import dev.dworks.apps.anexplorer.DialogFragment;
 import dev.dworks.apps.anexplorer.DocumentsActivity;
 import dev.dworks.apps.anexplorer.DocumentsApplication;
 import dev.dworks.apps.anexplorer.R;
 import dev.dworks.apps.anexplorer.adapter.ConnectionsAdapter;
 import dev.dworks.apps.anexplorer.cloud.CloudConnection;
-import dev.dworks.apps.anexplorer.common.DialogBuilder;
-import dev.dworks.apps.anexplorer.common.RecyclerFragment;
-import dev.dworks.apps.anexplorer.directory.DividerItemDecoration;
 import dev.dworks.apps.anexplorer.misc.AnalyticsManager;
 import dev.dworks.apps.anexplorer.misc.ProviderExecutor;
 import dev.dworks.apps.anexplorer.misc.RootsCache;
@@ -39,14 +45,15 @@ import dev.dworks.apps.anexplorer.provider.CloudStorageProvider;
 import dev.dworks.apps.anexplorer.provider.ExplorerProvider;
 import dev.dworks.apps.anexplorer.provider.NetworkStorageProvider;
 import dev.dworks.apps.anexplorer.setting.SettingsActivity;
+import dev.dworks.apps.anexplorer.ui.CompatTextView;
+import dev.dworks.apps.anexplorer.ui.FloatingActionButton;
 import dev.dworks.apps.anexplorer.ui.FloatingActionsMenu;
+import dev.dworks.apps.anexplorer.ui.MaterialProgressBar;
 import dev.dworks.apps.anexplorer.ui.fabs.FabSpeedDial;
+import dev.dworks.apps.anexplorer.ui.fabs.SimpleMenuListenerAdapter;
+import needle.Needle;
 
-import androidx.loader.app.LoaderManager;
-import androidx.loader.content.Loader;
-import static android.widget.LinearLayout.VERTICAL;
-import static dev.dworks.apps.anexplorer.DocumentsApplication.isSpecialDevice;
-import static dev.dworks.apps.anexplorer.DocumentsApplication.isWatch;
+import static dev.dworks.apps.anexplorer.DocumentsApplication.isTelevision;
 import static dev.dworks.apps.anexplorer.model.DocumentInfo.getCursorInt;
 import static dev.dworks.apps.anexplorer.network.NetworkConnection.SERVER;
 import static dev.dworks.apps.anexplorer.provider.CloudStorageProvider.TYPE_BOX;
@@ -55,8 +62,7 @@ import static dev.dworks.apps.anexplorer.provider.CloudStorageProvider.TYPE_DROP
 import static dev.dworks.apps.anexplorer.provider.CloudStorageProvider.TYPE_GDRIVE;
 import static dev.dworks.apps.anexplorer.provider.CloudStorageProvider.TYPE_ONEDRIVE;
 
-public class ConnectionsFragment extends RecyclerFragment
-        implements View.OnClickListener, FabSpeedDial.MenuListener, ConnectionsAdapter.OnItemClickListener {
+public class ConnectionsFragment extends ListFragment implements View.OnClickListener, FabSpeedDial.MenuListener {
 
     public static final String TAG = "ConnectionsFragment";
 
@@ -82,7 +88,7 @@ public class ConnectionsFragment extends RecyclerFragment
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setHasOptionsMenu(isSpecialDevice());
+        setHasOptionsMenu(isTelevision());
         mConnectionsRoot = DocumentsApplication.getRootsCache(getActivity()).getConnectionsRoot();
     }
 
@@ -98,20 +104,22 @@ public class ConnectionsFragment extends RecyclerFragment
 
         mActionMenu = (FloatingActionsMenu) view.findViewById(R.id.fabs);
         mActionMenu.setMenuListener(this);
-        mActionMenu.setVisibility(!isSpecialDevice() ? View.VISIBLE : View.GONE);
+        mActionMenu.setVisibility(!isTelevision() ? View.VISIBLE : View.GONE);
+
+        getListView().setOnItemClickListener(mItemListener);
+        if(isTelevision()) {
+            getListView().setOnItemLongClickListener(mItemLongClickListener);
+        }
         mActionMenu.attachToListView(getListView());
 
         // Indent our list divider to align with text
+        final Drawable divider = getListView().getDivider();
         final boolean insetLeft = res.getBoolean(R.bool.list_divider_inset_left);
         final int insetSize = res.getDimensionPixelSize(R.dimen.list_divider_inset);
-        DividerItemDecoration decoration = new DividerItemDecoration(getActivity(), VERTICAL);
         if (insetLeft) {
-            decoration.setInset(insetSize, 0);
+            getListView().setDivider(new InsetDrawable(divider, insetSize, 0, 0, 0));
         } else {
-            decoration.setInset(0, insetSize);
-        }
-        if(!isWatch()) {
-            getListView().addItemDecoration(decoration);
+            getListView().setDivider(new InsetDrawable(divider, 0, 0, insetSize, 0));
         }
     }
 
@@ -126,34 +134,12 @@ public class ConnectionsFragment extends RecyclerFragment
         mActionMenu.setSecondaryBackgroundTintList(Utils.getActionButtonColor(defaultColor));
     }
 
-
-    @Override
-    public void onItemClick(ConnectionsAdapter.ViewHolder item, View view, int position) {
-        final Cursor cursor = mAdapter.getItem(position);
-        if (cursor != null) {
-            openConnectionRoot(cursor);
-        }
-    }
-
-    @Override
-    public void onItemLongClick(ConnectionsAdapter.ViewHolder item, View view, int position) {
-        if(isSpecialDevice()) {
-            showPopupMenu(view, position);
-        }
-    }
-
-    @Override
-    public void onItemViewClick(ConnectionsAdapter.ViewHolder item, View view, int position) {
-        showPopupMenu(view, position);
-    }
-
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
         final Context context = getActivity();
 
-        mAdapter = new ConnectionsAdapter(context, null);
-        mAdapter.setOnItemClickListener(this);
+        mAdapter = new ConnectionsAdapter(this);
         mCallbacks = new LoaderManager.LoaderCallbacks<Cursor>() {
 
             @Override
@@ -175,7 +161,7 @@ public class ConnectionsFragment extends RecyclerFragment
                 if (!isAdded())
                     return;
 
-                mAdapter.swapCursor(result);
+                mAdapter.swapResult(result);
                 if (isResumed()) {
                     setListShown(true);
                 } else {
@@ -185,21 +171,39 @@ public class ConnectionsFragment extends RecyclerFragment
 
             @Override
             public void onLoaderReset(Loader<Cursor> loader) {
-                mAdapter.swapCursor(null);
+                mAdapter.swapResult(null);
             }
         };
         setListAdapter(mAdapter);
         setListShown(false);
         // Kick off loader at least once
-        LoaderManager.getInstance(getActivity()).restartLoader(mLoaderId, null, mCallbacks);
+        getLoaderManager().restartLoader(mLoaderId, null, mCallbacks);
 
     }
 
     public void reload(){
-        LoaderManager.getInstance(getActivity()).restartLoader(mLoaderId, null, mCallbacks);
+        getLoaderManager().restartLoader(mLoaderId, null, mCallbacks);
         RootsCache.updateRoots(getActivity(), NetworkStorageProvider.AUTHORITY);
         RootsCache.updateRoots(getActivity(), CloudStorageProvider.AUTHORITY);
     }
+
+    private AdapterView.OnItemClickListener mItemListener = new AdapterView.OnItemClickListener() {
+        @Override
+        public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+            final Cursor cursor = mAdapter.getItem(position);
+            if (cursor != null) {
+                openConnectionRoot(cursor);
+            }
+        }
+    };
+
+    private AdapterView.OnItemLongClickListener mItemLongClickListener = new AdapterView.OnItemLongClickListener() {
+        @Override
+        public boolean onItemLongClick(AdapterView<?> adapterView, View view, int position, long l) {
+            showPopupMenu(view, position);
+            return false;
+        }
+    };
 
     @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
@@ -218,6 +222,17 @@ public class ConnectionsFragment extends RecyclerFragment
         switch (view.getId()){
             case R.id.fab:
                 addConnection();
+                break;
+            case R.id.button_popup:
+                final int position = getListView().getPositionForView(view);
+                if (position != ListView.INVALID_POSITION) {
+                    view.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            showPopupMenu(view, position);
+                        }
+                    });
+                }
                 break;
         }
     }
@@ -245,14 +260,18 @@ public class ConnectionsFragment extends RecyclerFragment
                 if(!networkConnection.type.startsWith(TYPE_CLOUD)) {
                     editConnection(connection_id);
                 } else {
-                    Utils.showSnackBar(getActivity(), "Cloud storage connection can't be edited");
+                    ((BaseActivity)getActivity())
+                            .showSnackBar("Cloud storage connection can't be edited",
+                                    Snackbar.LENGTH_SHORT);
                 }
                 return true;
             case R.id.menu_delete:
                 if(!networkConnection.type.equals(SERVER)) {
                     deleteConnection(connection_id);
                 } else {
-                    Utils.showSnackBar(getActivity(), "Default server connection can't be deleted");
+                    ((BaseActivity)getActivity())
+                            .showSnackBar("Default server connection can't be deleted",
+                                    Snackbar.LENGTH_SHORT);
                 }
                 return true;
             default:
@@ -261,28 +280,31 @@ public class ConnectionsFragment extends RecyclerFragment
     }
 
     private void addConnection() {
-        CreateConnectionFragment.show(getAppCompatActivity().getSupportFragmentManager());
+        CreateConnectionFragment.show(((DocumentsActivity)getActivity()).getSupportFragmentManager());
         AnalyticsManager.logEvent("connection_add");
     }
 
     private void editConnection(int connection_id) {
-        CreateConnectionFragment.show(getAppCompatActivity().getSupportFragmentManager(), connection_id);
+        CreateConnectionFragment.show(((DocumentsActivity)getActivity()).getSupportFragmentManager(), connection_id);
         AnalyticsManager.logEvent("connection_edit");
     }
 
     private void deleteConnection(final int connection_id) {
-        DialogBuilder builder = new DialogBuilder(getActivity());
-        builder.setMessage("Delete connection?")
-                .setCancelable(false)
-                .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int did) {
-                        boolean success = NetworkConnection.deleteConnection(getActivity(), connection_id);
-                        if(success){
-                            reload();
-                        }
-                    }
-                    }).setNegativeButton(android.R.string.cancel,  null);
-        builder.showDialog();
+        AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+        builder.setMessage("Delete connection?").setCancelable(false).setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int did) {
+                dialog.dismiss();
+                boolean success = NetworkConnection.deleteConnection(getActivity(), connection_id);
+                if(success){
+                    reload();
+                }
+            }
+        }).setNegativeButton(android.R.string.cancel, new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int did) {
+                dialog.dismiss();
+            }
+        });
+        DialogFragment.showThemedDialog(builder);
         AnalyticsManager.logEvent("connection_delete");
     }
 

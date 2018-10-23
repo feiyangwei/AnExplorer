@@ -17,8 +17,9 @@
 
 package dev.dworks.apps.anexplorer.fragment;
 
-import androidx.fragment.app.FragmentManager;
-import androidx.fragment.app.FragmentTransaction;
+import android.app.Fragment;
+import android.app.FragmentManager;
+import android.app.FragmentTransaction;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextUtils;
@@ -33,7 +34,6 @@ import android.widget.ProgressBar;
 
 import dev.dworks.apps.anexplorer.BaseActivity;
 import dev.dworks.apps.anexplorer.R;
-import dev.dworks.apps.anexplorer.common.BaseFragment;
 import dev.dworks.apps.anexplorer.misc.FileUtils;
 import dev.dworks.apps.anexplorer.model.DocumentInfo;
 import dev.dworks.apps.anexplorer.setting.SettingsActivity;
@@ -41,7 +41,7 @@ import dev.dworks.apps.anexplorer.setting.SettingsActivity;
 /**
  * Display document title editor and save button.
  */
-public class SaveFragment extends BaseFragment implements OnClickListener{
+public class SaveFragment extends Fragment implements OnClickListener{
 	public static final String TAG = "SaveFragment";
 
 	private DocumentInfo mReplaceTarget;
@@ -161,7 +161,7 @@ public class SaveFragment extends BaseFragment implements OnClickListener{
 			break;
 
 		case android.R.id.button2:
-			getActivity().getSupportFragmentManager().beginTransaction().remove(this).commit();
+			getActivity().getFragmentManager().beginTransaction().remove(this).commit();
 			break;
 		}
 	}

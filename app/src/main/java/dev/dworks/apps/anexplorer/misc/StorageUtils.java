@@ -27,7 +27,6 @@ import android.os.StatFs;
 import android.os.storage.StorageManager;
 import androidx.core.content.res.ResourcesCompat;
 import android.text.TextUtils;
-import android.util.Log;
 
 import java.io.File;
 import java.io.RandomAccessFile;
@@ -42,7 +41,6 @@ import dev.dworks.apps.anexplorer.libcore.util.Objects;
 import static android.R.attr.label;
 import static dev.dworks.apps.anexplorer.misc.DiskInfo.FLAG_SD;
 import static dev.dworks.apps.anexplorer.misc.DiskInfo.FLAG_USB;
-import static dev.dworks.apps.anexplorer.misc.VolumeInfo.ID_EMULATED_INTERNAL;
 
 public final class StorageUtils {
     private static final String TAG = "StorageUtils";
@@ -91,11 +89,6 @@ public final class StorageUtils {
             String fsLabel = getString(object, "fsLabel");
             String path = getString(object, "path");
             String internalPath = getString(object, "internalPath");
-
-            if(Utils.hasPie() && TextUtils.isEmpty(id)) {
-                id = TextUtils.isEmpty(id)
-                        ? (path.contains(ID_EMULATED_INTERNAL) ? ID_EMULATED_INTERNAL : "") : id;
-            }
 
             VolumeInfo volumeInfo = new VolumeInfo(id, type, disk, partGuid);
             volumeInfo.mountFlags = mountFlags;
@@ -151,18 +144,6 @@ public final class StorageUtils {
             String mUuid = getString(object, "mUuid");
             String mUserLabel = getString(object, "mUserLabel");
             String mState = getString(object, "mState");
-
-            if(Utils.hasPie()) {
-                android.os.storage.StorageVolume volume = mStorageManager.getStorageVolume(mPath);
-                if(null != volume) {
-                    mPrimary = volume.isEmulated();
-                    mEmulated = volume.isEmulated();
-                    mRemovable = volume.isRemovable();
-                    mUserLabel = volume.getDescription(mContext);
-                    mFsUuid = volume.getUuid();
-                    mState = volume.getState();
-                }
-            }
 
             StorageVolume storageVolume = new StorageVolume(mStorageId, mPath, mDescription, mPrimary,
                     mRemovable, mEmulated, mMtpReserveSize, mAllowMassStorage, mMaxFileSize);

@@ -1,10 +1,14 @@
 package dev.dworks.apps.anexplorer.fragment;
 
+import android.app.Fragment;
+import android.app.FragmentManager;
+import android.app.FragmentTransaction;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
@@ -14,16 +18,11 @@ import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import androidx.fragment.app.FragmentManager;
-import androidx.fragment.app.FragmentTransaction;
-import dev.dworks.apps.anexplorer.BuildConfig;
 import dev.dworks.apps.anexplorer.R;
-import dev.dworks.apps.anexplorer.common.BaseFragment;
 import dev.dworks.apps.anexplorer.misc.ConnectionUtils;
 import dev.dworks.apps.anexplorer.misc.IconUtils;
 import dev.dworks.apps.anexplorer.model.RootInfo;
 import dev.dworks.apps.anexplorer.network.NetworkConnection;
-import dev.dworks.apps.anexplorer.setting.SettingsActivity;
 
 import static dev.dworks.apps.anexplorer.misc.ConnectionUtils.ACTION_FTPSERVER_FAILEDTOSTART;
 import static dev.dworks.apps.anexplorer.misc.ConnectionUtils.ACTION_FTPSERVER_STARTED;
@@ -32,7 +31,7 @@ import static dev.dworks.apps.anexplorer.misc.ConnectionUtils.ACTION_START_FTPSE
 import static dev.dworks.apps.anexplorer.misc.ConnectionUtils.ACTION_STOP_FTPSERVER;
 import static dev.dworks.apps.anexplorer.misc.Utils.EXTRA_ROOT;
 
-public class ServerFragment extends BaseFragment implements View.OnClickListener {
+public class ServerFragment extends Fragment implements View.OnClickListener {
 
     private TextView status;
     private TextView username;
@@ -72,8 +71,6 @@ public class ServerFragment extends BaseFragment implements View.OnClickListener
         password =(TextView) view.findViewById(R.id.password);
         path = (TextView) view.findViewById(R.id.path);
         address = (TextView) view.findViewById(R.id.address);
-        address.setTextColor(SettingsActivity.getAccentColor());
-        address.setHighlightColor(SettingsActivity.getPrimaryColor());
         warning = (TextView) view.findViewById(R.id.warning);
         action = (Button) view.findViewById(R.id.action);
         action.setOnClickListener(this);
@@ -121,14 +118,12 @@ public class ServerFragment extends BaseFragment implements View.OnClickListener
 
     private void startServer() {
         Intent intent = new Intent(ACTION_START_FTPSERVER);
-        intent.setPackage(BuildConfig.APPLICATION_ID);
         intent.putExtras(getArguments());
         getActivity().sendBroadcast(intent);
     }
 
     private void stopServer() {
         Intent intent = new Intent(ACTION_STOP_FTPSERVER);
-        intent.setPackage(BuildConfig.APPLICATION_ID);
         intent.putExtras(getArguments());
         getActivity().sendBroadcast(intent);
     }
@@ -154,10 +149,10 @@ public class ServerFragment extends BaseFragment implements View.OnClickListener
         switch (view.getId()){
             case R.id.action:
                 if(!ConnectionUtils.isServerRunning(getActivity())){
-                    if(ConnectionUtils.isConnectedToLocalNetwork(getActivity()))
+                    if(ConnectionUtils.isConnectedToWifi(getActivity()))
                         startServer();
                     else
-                        setText(warning, getString(R.string.local_no_connection));
+                        setText(warning, getString(R.string.ftp_no_wifi));
                 }
                 else{
                     stopServer();
@@ -170,14 +165,16 @@ public class ServerFragment extends BaseFragment implements View.OnClickListener
 
         @Override
         public void onReceive(Context context, Intent intent) {
-            if (ConnectionUtils.isConnectedToLocalNetwork(context)){
+            ConnectivityManager conMan = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
+            NetworkInfo netInfo = conMan.getActiveNetworkInfo();
+            if (netInfo != null && netInfo.getType() == ConnectivityManager.TYPE_WIFI){
                 setText(warning, "");
             }
             else{
                 stopServer();
                 setStatus(false);
                 setText(address, "");
-                setText(warning, getString(R.string.local_no_connection));
+                setText(warning, getString(R.string.ftp_no_wifi));
             }
         }
     };

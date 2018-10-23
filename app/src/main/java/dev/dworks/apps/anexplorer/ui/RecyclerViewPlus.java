@@ -2,31 +2,20 @@ package dev.dworks.apps.anexplorer.ui;
 
 import android.content.Context;
 import android.content.res.TypedArray;
-
-import androidx.annotation.DimenRes;
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
-
-import android.graphics.Rect;
+import androidx.recyclerview.widget.RecyclerView;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
-import android.view.View;
 
-import androidx.recyclerview.widget.LinearSnapHelper;
-import androidx.recyclerview.widget.RecyclerView;
-import androidx.recyclerview.widget.SnapHelper;
 import dev.dworks.apps.anexplorer.R;
 
-public class RecyclerViewPlus extends RecyclerViewCompat {
+public class RecyclerViewPlus extends RecyclerView {
     public static final int TYPE_LIST = 0;
     public static final int TYPE_GRID = 1;
     public static final int TYPE_GALLERY = 2;
-    public static final int TYPE_CUSTOM = 3;
-    private final int spanCount;
 
-    private RecyclerView.LayoutManager layoutManager;
+    private LayoutManager layoutManager;
     private int mType = TYPE_LIST;
     private int columnWidth = -1;
     private Context mContext;
@@ -47,7 +36,6 @@ public class RecyclerViewPlus extends RecyclerViewCompat {
                 defStyle, 0);
         mType = attributes.getInt(R.styleable.RecyclerViewPlus_type, TYPE_LIST);
         columnWidth = attributes.getDimensionPixelSize(R.styleable.RecyclerViewPlus_columnWidth, -1);
-        spanCount = attributes.getInt(R.styleable.RecyclerViewPlus_span, 1);
         attributes.recycle();
         setType(mType);
     }
@@ -61,21 +49,18 @@ public class RecyclerViewPlus extends RecyclerViewCompat {
         switch (mType){
             case TYPE_LIST:
                 layoutManager =
-                        new LinearLayoutManagerCompat(mContext, LinearLayoutManager.VERTICAL, false);
+                        new LinearLayoutManager(mContext, LinearLayoutManager.VERTICAL, false);
                 break;
             case TYPE_GRID:
                 layoutManager = new GridLayoutManager(mContext, 1);
                 break;
             case TYPE_GALLERY:
                 layoutManager =
-                        new LinearLayoutManagerCompat(mContext, LinearLayoutManager.HORIZONTAL, false);
-                break;
-            case TYPE_CUSTOM:
-                layoutManager = new GridLayoutManager(mContext, spanCount);
+                        new LinearLayoutManager(mContext, LinearLayoutManager.HORIZONTAL, false);
                 break;
             default:
                 layoutManager =
-                        new LinearLayoutManagerCompat(mContext, LinearLayoutManager.VERTICAL, false);
+                        new LinearLayoutManager(mContext, LinearLayoutManager.VERTICAL, false);
                 break;
         }
 

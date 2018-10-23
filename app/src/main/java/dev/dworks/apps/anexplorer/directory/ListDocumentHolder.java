@@ -35,7 +35,6 @@ import static dev.dworks.apps.anexplorer.BaseActivity.State.ACTION_BROWSE;
 import static dev.dworks.apps.anexplorer.BaseActivity.State.MODE_GRID;
 import static dev.dworks.apps.anexplorer.BaseActivity.State.MODE_LIST;
 import static dev.dworks.apps.anexplorer.DocumentsApplication.isTelevision;
-import static dev.dworks.apps.anexplorer.DocumentsApplication.isWatch;
 import static dev.dworks.apps.anexplorer.fragment.DirectoryFragment.TYPE_RECENT_OPEN;
 import static dev.dworks.apps.anexplorer.model.DocumentInfo.getCursorInt;
 import static dev.dworks.apps.anexplorer.model.DocumentInfo.getCursorLong;
@@ -138,12 +137,12 @@ public class ListDocumentHolder extends DocumentHolder {
             }
 
             if (summary != null) {
-                if (mDoc.summary != null && !isWatch()) {
+                if (mDoc.summary != null) {
                     summary.setText(mDoc.summary);
                     summary.setVisibility(View.VISIBLE);
                     hasLine2 = true;
                 } else {
-                    summary.setVisibility(View.GONE);
+                    summary.setVisibility(View.INVISIBLE);
                 }
             }
         }

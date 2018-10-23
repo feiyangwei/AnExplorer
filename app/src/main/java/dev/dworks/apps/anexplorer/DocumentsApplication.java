@@ -17,7 +17,6 @@
 
 package dev.dworks.apps.anexplorer;
 
-import android.app.Activity;
 import android.app.ActivityManager;
 import android.content.BroadcastReceiver;
 import android.content.ContentProviderClient;
@@ -28,23 +27,17 @@ import android.content.IntentFilter;
 import android.graphics.Point;
 import android.net.Uri;
 import android.os.RemoteException;
-import androidx.collection.ArrayMap;
-import androidx.appcompat.app.AppCompatDelegate;
 import android.text.format.DateUtils;
 
-import com.cloudrail.si.CloudRail;
-import com.google.android.material.snackbar.Snackbar;
-
-import dev.dworks.apps.anexplorer.cast.Casty;
+import androidx.appcompat.app.AppCompatDelegate;
+import androidx.collection.ArrayMap;
 import dev.dworks.apps.anexplorer.misc.AnalyticsManager;
 import dev.dworks.apps.anexplorer.misc.ContentProviderClientCompat;
 import dev.dworks.apps.anexplorer.misc.CrashReportingManager;
-import dev.dworks.apps.anexplorer.misc.NotificationUtils;
 import dev.dworks.apps.anexplorer.misc.RootsCache;
 import dev.dworks.apps.anexplorer.misc.SAFManager;
 import dev.dworks.apps.anexplorer.misc.ThumbnailCache;
 import dev.dworks.apps.anexplorer.misc.Utils;
-import dev.dworks.apps.anexplorer.server.SimpleWebServer;
 import dev.dworks.apps.anexplorer.setting.SettingsActivity;
 
 public class DocumentsApplication extends AppFlavour {
@@ -61,17 +54,9 @@ public class DocumentsApplication extends AppFlavour {
     private Point mThumbnailsSize;
     private ThumbnailCache mThumbnailCache;
     private static boolean isTelevision;
-    private static boolean isWatch;
-    private SimpleWebServer simpleWebServer;
-    private boolean isStarted;
-    private Casty mCasty;
 
     public static RootsCache getRootsCache(Context context) {
         return ((DocumentsApplication) context.getApplicationContext()).mRoots;
-    }
-
-    public static RootsCache getRootsCache() {
-        return ((DocumentsApplication) DocumentsApplication.getInstance().getApplicationContext()).mRoots;
     }
 
     public static ArrayMap<Integer, Long> getFolderSizes() {
@@ -103,7 +88,6 @@ public class DocumentsApplication extends AppFlavour {
 
     @Override
     public void onCreate() {
-        Utils.setAppThemeStyle(getBaseContext());
         super.onCreate();
         if(!BuildConfig.DEBUG) {
             AnalyticsManager.intialize(getApplicationContext());
@@ -111,8 +95,7 @@ public class DocumentsApplication extends AppFlavour {
         sInstance = this;
         final ActivityManager am = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
         final int memoryClassBytes = am.getMemoryClass() * 1024 * 1024;
-        CloudRail.setAppKey(BuildConfig.LICENSE_KEY);
-        CrashReportingManager.enable(getApplicationContext(), !BuildConfig.DEBUG);
+        CrashReportingManager.enable(getApplicationContext(), true);
 
         mRoots = new RootsCache(this);
         mRoots.updateAsync();
@@ -134,27 +117,13 @@ public class DocumentsApplication extends AppFlavour {
         registerReceiver(mCacheReceiver, localeFilter);
 
         isTelevision = Utils.isTelevision(this);
-        isWatch = Utils.isWatch(this);
-        if((isTelevision || isWatch) && Integer.valueOf(SettingsActivity.getThemeStyle())
-                != AppCompatDelegate.MODE_NIGHT_YES){
+        if(isTelevision && Integer.valueOf(SettingsActivity.getThemeStyle()) != AppCompatDelegate.MODE_NIGHT_YES){
             SettingsActivity.setThemeStyle(AppCompatDelegate.MODE_NIGHT_YES);
-        }
-
-        if(Utils.hasOreo()) {
-            NotificationUtils.createNotificationChannels(this);
         }
     }
 
     public static synchronized DocumentsApplication getInstance() {
         return sInstance;
-    }
-
-    public void initCasty(Activity activity) {
-        mCasty = Casty.create(activity);
-    }
-
-    public Casty getCasty() {
-        return mCasty;
     }
 
     @Override
@@ -176,15 +145,7 @@ public class DocumentsApplication extends AppFlavour {
         }
     };
 
-    public static boolean isSpecialDevice() {
-        return isTelevision() || isWatch();
-    }
-
     public static boolean isTelevision() {
         return isTelevision;
-    }
-
-    public static boolean isWatch() {
-        return isWatch;
     }
 }

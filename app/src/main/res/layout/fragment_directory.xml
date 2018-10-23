@@ -62,12 +62,11 @@
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:clipToPadding="false"
-                android:drawSelectorOnTop="true"
+                android:scrollbarStyle="outsideOverlay"
                 android:horizontalSpacing="@dimen/grid_item_padding"
-                android:scrollbars="vertical"
-                android:paddingBottom="@dimen/document_list_padding"
+                app:type="list"
                 app:columnWidth="@dimen/grid_item_width"
-                app:type="list" />
+                android:drawSelectorOnTop="true" />
 
         </FrameLayout>
 
@@ -78,7 +77,6 @@
             android:layout_height="wrap_content"
             android:layout_gravity="center"
             android:gravity="center"
-            android:paddingTop="10dp"
             android:text="@string/empty"
             android:visibility="gone"
             app:drawableTop="@drawable/ic_empty_file" />

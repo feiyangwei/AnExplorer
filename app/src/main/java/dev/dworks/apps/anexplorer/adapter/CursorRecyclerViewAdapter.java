@@ -35,13 +35,11 @@ public abstract class CursorRecyclerViewAdapter<VH extends RecyclerView.ViewHold
     private boolean mDataValid;
     private int mRowIdColumn;
     private DataSetObserver mDataSetObserver;
-    private int mCursorCount;
 
     public CursorRecyclerViewAdapter(Context context, Cursor cursor) {
         mContext = context;
         mCursor = cursor;
         mDataValid = cursor != null;
-        mCursorCount = mCursor != null ? mCursor.getCount() : 0;
         mRowIdColumn = mDataValid ? mCursor.getColumnIndex("_id") : -1;
         mDataSetObserver = new NotifyingDataSetObserver();
         if (mCursor != null) {
@@ -51,15 +49,6 @@ public abstract class CursorRecyclerViewAdapter<VH extends RecyclerView.ViewHold
 
     public Cursor getCursor() {
         return mCursor;
-    }
-
-    public Cursor getItem(int position) {
-        if (position < mCursorCount) {
-            mCursor.moveToPosition(position);
-            return mCursor;
-        } else {
-            return null;
-        }
     }
 
     @Override
@@ -134,7 +123,6 @@ public abstract class CursorRecyclerViewAdapter<VH extends RecyclerView.ViewHold
             notifyDataSetChanged();
             //There is no notifyDataSetInvalidated() method in RecyclerView.Adapter
         }
-        mCursorCount = mCursor != null ? mCursor.getCount() : 0;
         return oldCursor;
     }
 

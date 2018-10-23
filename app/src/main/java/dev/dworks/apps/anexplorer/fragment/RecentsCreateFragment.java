@@ -17,13 +17,12 @@
 
 package dev.dworks.apps.anexplorer.fragment;
 
-import androidx.fragment.app.FragmentManager;
-import androidx.fragment.app.FragmentTransaction;
-import androidx.loader.app.LoaderManager;
-import androidx.loader.app.LoaderManager.LoaderCallbacks;
-import androidx.loader.content.Loader;
+import android.app.FragmentManager;
+import android.app.FragmentTransaction;
+import android.app.LoaderManager.LoaderCallbacks;
 import android.content.ContentResolver;
 import android.content.Context;
+import android.content.Loader;
 import android.database.Cursor;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
@@ -52,7 +51,6 @@ import java.util.List;
 
 import dev.dworks.apps.anexplorer.BaseActivity;
 import dev.dworks.apps.anexplorer.BaseActivity.State;
-import dev.dworks.apps.anexplorer.DocumentsActivity;
 import dev.dworks.apps.anexplorer.DocumentsApplication;
 import dev.dworks.apps.anexplorer.R;
 import dev.dworks.apps.anexplorer.libcore.io.IoUtils;
@@ -143,7 +141,7 @@ public class RecentsCreateFragment extends ListFragment {
 
         setListAdapter(mAdapter);
         setListShown(false);
-        LoaderManager.getInstance(getActivity()).restartLoader(LOADER_RECENTS, getArguments(), mCallbacks);
+        getLoaderManager().restartLoader(LOADER_RECENTS, getArguments(), mCallbacks);
     }
 
     private OnItemClickListener mItemListener = new OnItemClickListener() {

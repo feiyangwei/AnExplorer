@@ -1,5 +1,6 @@
 /*
- * Copyright 2018 The Android Open Source Project
+ * Copyright (C) 2014 Hari Krishna Dulipudi
+ * Copyright (C) 2010 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,17 +17,15 @@
 
 package dev.dworks.apps.anexplorer.misc;
 
-import android.annotation.SuppressLint;
+import android.annotation.TargetApi;
 import android.content.Context;
+import android.content.Loader;
+import android.os.AsyncTask;
+import android.os.Build;
 import android.os.Handler;
+import android.os.OperationCanceledException;
 import android.os.SystemClock;
 import android.util.Log;
-
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.core.os.OperationCanceledException;
-import androidx.core.util.TimeUtils;
-import androidx.loader.content.Loader;
 
 import java.io.FileDescriptor;
 import java.io.PrintWriter;
@@ -34,11 +33,26 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executor;
 
 /**
- * Static library support version of the framework's {@link android.content.AsyncTaskLoader}.
- * Used to write apps that run on platforms prior to Android 3.0.  When running
- * on Android 3.0 or above, this implementation is still used; it does not try
- * to switch to the framework's implementation.  See the framework SDK
- * documentation for a class overview.
+ * Abstract Loader that provides an {@link AsyncTask} to do the work.  See
+ * {@link Loader} and {@link android.app.LoaderManager} for more details.
+ *
+ * <p>Here is an example implementation of an AsyncTaskLoader subclass that
+ * loads the currently installed applications from the package manager.  This
+ * implementation takes care of retrieving the application labels and sorting
+ * its result set from them, monitoring for changes to the installed
+ * applications, and rebuilding the list when a change in configuration requires
+ * this (such as a locale change).
+ *
+ * {@sample development/samples/ApiDemos/src/com/example/android/apis/app/LoaderCustom.java
+ *      loader}
+ *
+ * <p>An example implementation of a fragment that uses the above loader to show
+ * the currently installed applications in a list is below.
+ *
+ * {@sample development/samples/ApiDemos/src/com/example/android/apis/app/LoaderCustom.java
+ *      fragment}
+ *
+ * @param <D> the data type to be loaded.
  */
 public abstract class AsyncTaskLoader<D> extends Loader<D> {
     static final String TAG = "AsyncTaskLoader";
@@ -123,11 +137,11 @@ public abstract class AsyncTaskLoader<D> extends Loader<D> {
     long mLastLoadCompleteTime = -10000;
     Handler mHandler;
 
-    public AsyncTaskLoader(@NonNull Context context) {
+    public AsyncTaskLoader(Context context) {
         this(context, AsyncTask.THREAD_POOL_EXECUTOR);
     }
 
-    public AsyncTaskLoader(@NonNull Context context, @NonNull Executor executor) {
+    public AsyncTaskLoader(Context context, Executor executor) {
         super(context);
         mExecutor = executor;
     }
@@ -159,9 +173,6 @@ public abstract class AsyncTaskLoader<D> extends Loader<D> {
     protected boolean onCancelLoad() {
         if (DEBUG) Log.v(TAG, "onCancelLoad: mTask=" + mTask);
         if (mTask != null) {
-            if (!isStarted()) {
-                onContentChanged();
-            }
             if (mCancellingTask != null) {
                 // There was a pending task already waiting for a previous
                 // one being canceled; just drop it.
@@ -194,7 +205,7 @@ public abstract class AsyncTaskLoader<D> extends Loader<D> {
         }
         return false;
     }
-
+    
     public boolean cancelLoad() {
         return onCancelLoad();
     }
@@ -206,7 +217,7 @@ public abstract class AsyncTaskLoader<D> extends Loader<D> {
      * @param data The value that was returned by {@link #loadInBackground}, or null
      * if the task threw {@link OperationCanceledException}.
      */
-    public void onCanceled(@Nullable D data) {
+    public void onCanceled(D data) {
     }
 
     void executePendingTask() {
@@ -232,19 +243,25 @@ public abstract class AsyncTaskLoader<D> extends Loader<D> {
         }
     }
 
+    @TargetApi(Build.VERSION_CODES.JELLY_BEAN_MR2)
     void dispatchOnCancelled(LoadTask task, D data) {
         onCanceled(data);
         if (mCancellingTask == task) {
             if (DEBUG) Log.v(TAG, "Cancelled task is now canceled!");
-            rollbackContentChanged();
+            if(Utils.hasJellyBeanMR2()){
+            	rollbackContentChanged();
+            }
             mLastLoadCompleteTime = SystemClock.uptimeMillis();
             mCancellingTask = null;
             if (DEBUG) Log.v(TAG, "Delivering cancellation");
-            deliverCancellation();
+            if(Utils.hasJellyBeanMR2()){
+            	deliverCancellation();
+            }
             executePendingTask();
         }
     }
 
+    @TargetApi(Build.VERSION_CODES.JELLY_BEAN_MR2)
     void dispatchOnLoadComplete(LoadTask task, D data) {
         if (mTask != task) {
             if (DEBUG) Log.v(TAG, "Load complete of old task, trying to cancel");
@@ -254,7 +271,9 @@ public abstract class AsyncTaskLoader<D> extends Loader<D> {
                 // This cursor has been abandoned; just cancel the new data.
                 onCanceled(data);
             } else {
-                commitContentChanged();
+            	if(Utils.hasJellyBeanMR2()){
+            		commitContentChanged();
+            	}
                 mLastLoadCompleteTime = SystemClock.uptimeMillis();
                 mTask = null;
                 if (DEBUG) Log.v(TAG, "Delivering result");
@@ -290,7 +309,6 @@ public abstract class AsyncTaskLoader<D> extends Loader<D> {
      * @see #cancelLoadInBackground
      * @see #onCanceled
      */
-    @Nullable
     public abstract D loadInBackground();
 
     /**
@@ -305,7 +323,6 @@ public abstract class AsyncTaskLoader<D> extends Loader<D> {
      *
      * @see #loadInBackground
      */
-    @Nullable
     protected D onLoadInBackground() {
         return loadInBackground();
     }
@@ -351,26 +368,24 @@ public abstract class AsyncTaskLoader<D> extends Loader<D> {
         }
     }
 
-    @SuppressLint("RestrictedApi")
     @Override
-    @Deprecated
     public void dump(String prefix, FileDescriptor fd, PrintWriter writer, String[] args) {
         super.dump(prefix, fd, writer, args);
         if (mTask != null) {
             writer.print(prefix); writer.print("mTask="); writer.print(mTask);
-            writer.print(" waiting="); writer.println(mTask.waiting);
+                    writer.print(" waiting="); writer.println(mTask.waiting);
         }
         if (mCancellingTask != null) {
             writer.print(prefix); writer.print("mCancellingTask="); writer.print(mCancellingTask);
-            writer.print(" waiting="); writer.println(mCancellingTask.waiting);
+                    writer.print(" waiting="); writer.println(mCancellingTask.waiting);
         }
-        if (mUpdateThrottle != 0) {
+        /*if (mUpdateThrottle != 0) {
             writer.print(prefix); writer.print("mUpdateThrottle=");
-            TimeUtils.formatDuration(mUpdateThrottle, writer);
-            writer.print(" mLastLoadCompleteTime=");
-            TimeUtils.formatDuration(mLastLoadCompleteTime,
-                    SystemClock.uptimeMillis(), writer);
-            writer.println();
-        }
+                    TimeUtils.formatDuration(mUpdateThrottle, writer);
+                    writer.print(" mLastLoadCompleteTime=");
+                    TimeUtils.formatDuration(mLastLoadCompleteTime,
+                            SystemClock.uptimeMillis(), writer);
+                    writer.println();
+        }*/
     }
 }

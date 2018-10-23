@@ -21,7 +21,6 @@ import android.content.Context;
 import android.content.Intent;
 
 import dev.dworks.apps.anexplorer.misc.RootsCache;
-import dev.dworks.apps.anexplorer.misc.Utils;
 import dev.dworks.apps.anexplorer.provider.ExternalStorageProvider;
 import dev.dworks.apps.anexplorer.provider.UsbStorageProvider;
 
@@ -29,8 +28,6 @@ public class MountReceiver extends BroadcastReceiver {
 	@Override
 	public void onReceive(Context context, Intent intent) {
 		RootsCache.updateRoots(context, ExternalStorageProvider.AUTHORITY);
-		if(Utils.checkUSBDevices()) {
-			RootsCache.updateRoots(context, UsbStorageProvider.AUTHORITY);
-		}
+		RootsCache.updateRoots(context, UsbStorageProvider.AUTHORITY);
 	}
 }

@@ -25,8 +25,6 @@ import dev.dworks.apps.anexplorer.archive.DocumentArchiveHelper;
 import dev.dworks.apps.anexplorer.libcore.io.IoUtils;
 import dev.dworks.apps.anexplorer.model.DocumentsContract;
 
-import static dev.dworks.apps.anexplorer.misc.ContentProviderClientCompat.buildAssetFileDescriptor;
-
 public abstract class StorageProvider extends DocumentsProvider{
 
 	private static final String TAG = "StorageProvider";
@@ -140,7 +138,7 @@ public abstract class StorageProvider extends DocumentsProvider{
             extras = null;
         }
 
-        return buildAssetFileDescriptor(pfd, 0, AssetFileDescriptor.UNKNOWN_LENGTH, extras);
+        return new AssetFileDescriptor(pfd, 0, AssetFileDescriptor.UNKNOWN_LENGTH);
     }
 
 
@@ -244,7 +242,7 @@ public abstract class StorageProvider extends DocumentsProvider{
             extras = null;
         }
 
-        return buildAssetFileDescriptor(pfd, 0, AssetFileDescriptor.UNKNOWN_LENGTH, extras);
+        return new AssetFileDescriptor(pfd, 0, AssetFileDescriptor.UNKNOWN_LENGTH);
     }
 
     protected interface VideosBucketThumbnailQuery {

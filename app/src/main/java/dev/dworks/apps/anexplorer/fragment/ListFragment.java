@@ -17,6 +17,7 @@
 
 package dev.dworks.apps.anexplorer.fragment;
 
+import android.app.Fragment;
 import android.os.Bundle;
 import android.os.Handler;
 import android.view.LayoutInflater;
@@ -28,10 +29,9 @@ import android.widget.ListView;
 import android.widget.TextView;
 
 import dev.dworks.apps.anexplorer.R;
-import dev.dworks.apps.anexplorer.common.BaseFragment;
 import dev.dworks.apps.anexplorer.misc.CrashReportingManager;
 
-public class ListFragment extends BaseFragment {
+public class ListFragment extends Fragment {
 	private ListAdapter mAdapter;
     final private Handler mHandler = new Handler();
     private ListView mList;

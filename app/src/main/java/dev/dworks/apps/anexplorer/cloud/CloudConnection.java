@@ -216,7 +216,7 @@ public class CloudConnection {
         protected void onPostExecute(Boolean result) {
             if (result) {
                 RootsCache.updateRoots(mActivity, CloudStorageProvider.AUTHORITY);
-                ConnectionsFragment connectionsFragment = ConnectionsFragment.get(mActivity.getSupportFragmentManager());
+                ConnectionsFragment connectionsFragment = ConnectionsFragment.get(mActivity.getFragmentManager());
                 if(null != connectionsFragment){
                     connectionsFragment.reload();
                     connectionsFragment.openConnectionRoot(mCloudConnection);

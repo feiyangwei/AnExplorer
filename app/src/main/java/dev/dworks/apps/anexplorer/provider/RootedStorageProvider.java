@@ -33,7 +33,6 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.ArrayList;
 import java.util.Map;
 import java.util.Scanner;
 
@@ -372,9 +371,19 @@ public class RootedStorageProvider extends StorageProvider {
         final MatrixCursor result = new DirectoryCursor(
                 resolveDocumentProjection(projection), parentDocumentId, parent);
         try {
-            ArrayList<String> listFiles = RootCommands.listFiles(parent.getPath());
-            for (String line : listFiles){
-                includeRootFile(result, null, new RootFile(parent, line));
+            BufferedReader br = RootCommands.listFiles(parent.getPath());
+            if (null != br){
+            	Scanner scanner = new Scanner(br);
+            	while (scanner.hasNextLine()) {
+            	  String line = scanner.nextLine();
+            	  try {
+            		  includeRootFile(result, null, new RootFile(parent, line));
+            	  } catch (Exception e) {
+            		  e.printStackTrace();
+            	  }
+
+            	}
+            	scanner.close();
             }
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -394,11 +403,20 @@ public class RootedStorageProvider extends StorageProvider {
         }
 
         try {
-            ArrayList<String> listFiles = RootCommands.findFiles(parent.getPath(), query);
-            for (String line : listFiles){
-                includeRootFile(result, null, new RootFile(parent, line));
-            }
+            BufferedReader br = RootCommands.findFiles(parent.getPath(), query);
+            if (null != br){
+                Scanner scanner = new Scanner(br);
+                while (scanner.hasNextLine()) {
+                    String line = scanner.nextLine();
+                    try {
+                        includeRootFile(result, null, new RootFile(parent, line));
+                    } catch (Exception e) {
+                        CrashReportingManager.logException(e);
+                    }
 
+                }
+                scanner.close();
+            }
         } catch (Exception e) {
             CrashReportingManager.logException(e);
         }

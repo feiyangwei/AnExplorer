@@ -22,7 +22,9 @@ import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 
+import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
+import dev.dworks.apps.anexplorer.ActionBarActivity;
 import dev.dworks.apps.anexplorer.R;
 
 /**
@@ -52,5 +54,16 @@ public class WebviewActivity extends ActionBarActivity {
     @Override
     public String getTag() {
         return TAG;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            // Respond to the action bar's Up/Home button
+            case android.R.id.home:
+                finish();
+                return true;
+        }
+        return super.onOptionsItemSelected(item);
     }
 }

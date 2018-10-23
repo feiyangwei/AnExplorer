@@ -53,16 +53,12 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
-        <dev.dworks.apps.anexplorer.ui.RecyclerViewPlus
-            android:id="@id/recyclerview"
+        <ListView
+            android:id="@+id/list"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:clipToPadding="false"
-            android:drawSelectorOnTop="true"
-            android:horizontalSpacing="@dimen/grid_item_padding"
-            android:scrollbars="vertical"
-            app:columnWidth="@dimen/grid_item_width"
-            app:type="list" />
+            android:scrollbarStyle="outsideOverlay" />
 
         <include layout="@layout/fab_layout_connections" />
 

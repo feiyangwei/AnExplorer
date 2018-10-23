@@ -14,10 +14,9 @@
      limitations under the License.
 -->
 
-<dev.dworks.apps.anexplorer.ui.CommonFrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:padding="?android:attr/listPreferredItemPaddingRight">
 
     <EditText
@@ -26,7 +25,6 @@
         android:layout_height="wrap_content"
         android:layout_gravity="start"
         android:textAlignment="viewStart"
-        app:boxedEdges="all"
         android:theme="@style/EditTextAppTheme"/>
 
-</dev.dworks.apps.anexplorer.ui.CommonFrameLayout>
+</FrameLayout>

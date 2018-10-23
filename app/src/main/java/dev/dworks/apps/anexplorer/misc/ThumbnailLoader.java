@@ -23,10 +23,8 @@ import android.graphics.Point;
 import android.graphics.drawable.BitmapDrawable;
 import android.net.Uri;
 import android.os.CancellationSignal;
-import android.os.OperationCanceledException;
 import android.util.Log;
 import android.view.View;
-import android.webkit.URLUtil;
 import android.widget.ImageView;
 
 
@@ -34,6 +32,8 @@ import dev.dworks.apps.anexplorer.DocumentsApplication;
 import dev.dworks.apps.anexplorer.libcore.util.BiConsumer;
 import dev.dworks.apps.anexplorer.libcore.util.Consumer;
 import dev.dworks.apps.anexplorer.model.DocumentsContract;
+
+import static dev.dworks.apps.anexplorer.BaseActivity.TAG;
 
 /**
  *  Loads a Thumbnails asynchronously then animates from the mime icon to the thumbnail
@@ -114,16 +114,11 @@ public final class ThumbnailLoader extends AsyncTask<Uri, Void, Bitmap> implemen
         ContentProviderClient client = null;
         Bitmap result = null;
         try {
-            if(URLUtil.isNetworkUrl(mUri.toString())){
-                result = ImageUtils.getThumbnail(resolver, mUri, mThumbSize.x, mThumbSize.y);
-            }
-            if (null == result) {
-                if (Utils.isAPK(mMimeType)) {
-                    result = ((BitmapDrawable) IconUtils.loadPackagePathIcon(context, mPath, DocumentsContract.Document.MIME_TYPE_APK)).getBitmap();
-                } else {
-                    client = DocumentsApplication.acquireUnstableProviderOrThrow(resolver, mUri.getAuthority());
-                    result = DocumentsContract.getDocumentThumbnail(resolver, mUri, mThumbSize, mSignal);
-                }
+            if (Utils.isAPK(mMimeType)) {
+                result = ((BitmapDrawable) IconUtils.loadPackagePathIcon(context, mPath, DocumentsContract.Document.MIME_TYPE_APK)).getBitmap();
+            } else {
+                client = DocumentsApplication.acquireUnstableProviderOrThrow(resolver, mUri.getAuthority());
+                result = DocumentsContract.getDocumentThumbnail(resolver, mUri, mThumbSize, mSignal);
             }
             if (null == result){
                 result = ImageUtils.getThumbnail(mPath, mMimeType, mThumbSize.x, mThumbSize.y);
@@ -133,7 +128,7 @@ public final class ThumbnailLoader extends AsyncTask<Uri, Void, Bitmap> implemen
                 thumbs.putThumbnail(mUri, mThumbSize, result, mLastModified);
             }
         } catch (Exception e) {
-            if (!(e instanceof OperationCanceledException)) {
+            if (!(e instanceof androidx.core.os.OperationCanceledException)) {
                 Log.w(TAG, "Failed to load thumbnail for " + mUri + ": " + e);
             }
             CrashReportingManager.logException(e);
