@@ -1020,8 +1020,10 @@ public class DocumentsActivity extends BaseActivity {
     /**
      * Set state sort order based on explicit user action.
      */
-    private void setUserSortOrder(int sortOrder) {
-        mState.userSortOrder = sortOrder;
+    public void setUserSortOrder(int sortOrder) {
+        if(sortOrder != BaseActivity.State.SORT_ORDER_INVALID){
+            mState.userSortOrder = sortOrder;
+        }
         Fragment fragment = DirectoryFragment.get(getFragmentManager());
         if(fragment instanceof DirectoryFragment) {
             final DirectoryFragment directory = (DirectoryFragment) fragment;
@@ -1407,7 +1409,6 @@ public class DocumentsActivity extends BaseActivity {
             try {
                 final Uri uri = DocumentsContract.buildDocumentUri(
                         mRoot.authority, mRoot.documentId);
-                Log.e("BGA", mRoot.authority+"===="+mRoot.documentId);
                 return DocumentInfo.fromUri(getContentResolver(), uri);
             } catch (FileNotFoundException e) {
                 Log.w(TAG, "Failed to find root", e);

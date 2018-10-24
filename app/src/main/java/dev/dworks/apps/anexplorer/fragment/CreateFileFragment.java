@@ -33,6 +33,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.EditText;
 
+import dev.dworks.apps.anexplorer.BaseActivity;
 import dev.dworks.apps.anexplorer.DialogFragment;
 import dev.dworks.apps.anexplorer.DocumentsActivity;
 import dev.dworks.apps.anexplorer.DocumentsApplication;
@@ -157,6 +158,7 @@ public class CreateFileFragment extends DialogFragment {
             }
 
             mActivity.setPending(false);
+            ((DocumentsActivity) mActivity).setUserSortOrder(BaseActivity.State.SORT_ORDER_INVALID);
         }
     }
 }

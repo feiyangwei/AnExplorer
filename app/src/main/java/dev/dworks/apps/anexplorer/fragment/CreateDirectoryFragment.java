@@ -35,6 +35,7 @@ import android.widget.EditText;
 
 import dev.dworks.apps.anexplorer.BaseActivity;
 import dev.dworks.apps.anexplorer.DialogFragment;
+import dev.dworks.apps.anexplorer.DocumentsActivity;
 import dev.dworks.apps.anexplorer.DocumentsApplication;
 import dev.dworks.apps.anexplorer.R;
 import dev.dworks.apps.anexplorer.misc.AsyncTask;
@@ -139,7 +140,6 @@ public class CreateDirectoryFragment extends DialogFragment {
                     mActivity.showError(R.string.create_error);
                 }
             }
-
             mActivity.setPending(false);
         }
     }

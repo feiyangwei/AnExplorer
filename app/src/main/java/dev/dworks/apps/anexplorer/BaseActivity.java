@@ -22,16 +22,20 @@ import android.content.pm.ResolveInfo;
 import android.os.Build;
 import android.os.Parcel;
 import android.os.Parcelable;
+
 import com.google.android.material.snackbar.Snackbar;
+
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.collection.ArrayMap;
 import androidx.recyclerview.widget.RecyclerView;
+
 import android.text.TextUtils;
 import android.util.SparseArray;
 import android.view.View;
 import android.widget.AbsListView;
 
+import java.util.Arrays;
 import java.util.List;
 
 import dev.dworks.apps.anexplorer.misc.PermissionUtil;
@@ -47,31 +51,52 @@ public abstract class BaseActivity extends ActionBarActivity {
     public static final String TAG = "Documents";
 
     public abstract State getDisplayState();
+
     public abstract RootInfo getCurrentRoot();
+
     public abstract void onStateChanged();
+
     public abstract void setRootsDrawerOpen(boolean open);
+
     public abstract void onDocumentPicked(DocumentInfo doc);
+
     public abstract void onDocumentsPicked(List<DocumentInfo> docs);
+
     public abstract DocumentInfo getCurrentDirectory();
+
     public abstract void setPending(boolean pending);
+
     public abstract void onStackPicked(DocumentStack stack);
+
     public abstract void onPickRequested(DocumentInfo pickTarget);
+
     public abstract void onAppPicked(ResolveInfo info);
+
     public abstract void onRootPicked(RootInfo root, boolean closeDrawer);
+
     public abstract void onSaveRequested(DocumentInfo replaceTarget);
+
     public abstract void onSaveRequested(String mimeType, String displayName);
 
     public abstract boolean isCreateSupported();
+
     public abstract RootInfo getDownloadRoot();
+
     public abstract boolean getActionMode();
+
     public abstract void setActionMode(boolean actionMode);
+
     public abstract void setUpStatusBar();
+
     public abstract void setUpDefaultStatusBar();
 
 
     public abstract boolean isShowAsDialog();
+
     public abstract void upadateActionItems(RecyclerView mCurrentView);
+
     public abstract void setInfoDrawerOpen(boolean open);
+
     public abstract void again();
 
     public static BaseActivity get(Fragment fragment) {
@@ -82,14 +107,22 @@ public abstract class BaseActivity extends ActionBarActivity {
         public int action;
         public String[] acceptMimes;
 
-        /** Explicit user choice */
+        /**
+         * Explicit user choice
+         */
         public int userMode = MODE_UNKNOWN;
-        /** Derived after loader */
+        /**
+         * Derived after loader
+         */
         public int derivedMode = MODE_LIST;
 
-        /** Explicit user choice */
+        /**
+         * Explicit user choice
+         */
         public int userSortOrder = SORT_ORDER_UNKNOWN;
-        /** Derived after loader */
+        /**
+         * Derived after loader
+         */
         public int derivedSortOrder = SORT_ORDER_DISPLAY_NAME;
 
         public boolean allowMultiple = false;
@@ -104,12 +137,18 @@ public abstract class BaseActivity extends ActionBarActivity {
         public boolean stackTouched = false;
         public boolean restored = false;
 
-        /** Current user navigation stack; empty implies recents. */
+        /**
+         * Current user navigation stack; empty implies recents.
+         */
         public DocumentStack stack = new DocumentStack();
-        /** Currently active search, overriding any stack. */
+        /**
+         * Currently active search, overriding any stack.
+         */
         public String currentSearch;
 
-        /** Instance state for every shown directory */
+        /**
+         * Instance state for every shown directory
+         */
         public ArrayMap<String, SparseArray<Parcelable>> dirState = new ArrayMap<>();
 
         public static final int ACTION_OPEN = 1;
@@ -120,11 +159,14 @@ public abstract class BaseActivity extends ActionBarActivity {
         public static final int ACTION_BROWSE = 6;
         public static final int ACTION_MANAGE_ALL = 7;
 
-        public @interface ViewMode {}
+        public @interface ViewMode {
+        }
+
         public static final int MODE_UNKNOWN = 0;
         public static final int MODE_LIST = 1;
         public static final int MODE_GRID = 2;
 
+        public static final int SORT_ORDER_INVALID = -1;
         public static final int SORT_ORDER_UNKNOWN = 0;
         public static final int SORT_ORDER_DISPLAY_NAME = 1;
         public static final int SORT_ORDER_LAST_MODIFIED = 2;
@@ -194,17 +236,43 @@ public abstract class BaseActivity extends ActionBarActivity {
                 return new State[size];
             }
         };
+
+        @Override
+        public String toString() {
+            return "State{" +
+                    "action=" + action +
+                    ", acceptMimes=" + Arrays.toString(acceptMimes) +
+                    ", userMode=" + userMode +
+                    ", derivedMode=" + derivedMode +
+                    ", userSortOrder=" + userSortOrder +
+                    ", derivedSortOrder=" + derivedSortOrder +
+                    ", allowMultiple=" + allowMultiple +
+                    ", showSize=" + showSize +
+                    ", showFolderSize=" + showFolderSize +
+                    ", showThumbnail=" + showThumbnail +
+                    ", showHiddenFiles=" + showHiddenFiles +
+                    ", localOnly=" + localOnly +
+                    ", forceAdvanced=" + forceAdvanced +
+                    ", showAdvanced=" + showAdvanced +
+                    ", rootMode=" + rootMode +
+                    ", stackTouched=" + stackTouched +
+                    ", restored=" + restored +
+                    ", stack=" + stack +
+                    ", currentSearch='" + currentSearch + '\'' +
+                    ", dirState=" + dirState +
+                    '}';
+        }
     }
 
-    public void showError(int msg){
+    public void showError(int msg) {
         showToast(msg, ContextCompat.getColor(this, R.color.button_text_color_red), Snackbar.LENGTH_SHORT);
     }
 
-    public void showInfo(String msg){
+    public void showInfo(String msg) {
         showSnackBar(msg, Snackbar.LENGTH_SHORT);
     }
 
-    public void showToast(int msg, int actionColor, int duration){
+    public void showToast(int msg, int actionColor, int duration) {
         final Snackbar snackbar = Snackbar.make(findViewById(R.id.content_view), msg, duration);
         snackbar.setAction(android.R.string.ok, new View.OnClickListener() {
             @Override
@@ -215,7 +283,7 @@ public abstract class BaseActivity extends ActionBarActivity {
                 .setActionTextColor(actionColor).show();
     }
 
-    public void showSnackBar(String text, int duration){
+    public void showSnackBar(String text, int duration) {
         final Snackbar snackbar = Snackbar.make(findViewById(R.id.content_view), text, duration);
         snackbar.setAction(android.R.string.ok, new View.OnClickListener() {
             @Override
@@ -226,7 +294,7 @@ public abstract class BaseActivity extends ActionBarActivity {
         snackbar.setActionTextColor(SettingsActivity.getAccentColor()).show();
     }
 
-    public void showSnackBar(String text, int duration, String action, int actionColor){
+    public void showSnackBar(String text, int duration, String action, int actionColor) {
         final Snackbar snackbar = Snackbar.make(findViewById(R.id.content_view), text, duration);
         snackbar.setAction(action, new View.OnClickListener() {
             @Override
@@ -237,21 +305,21 @@ public abstract class BaseActivity extends ActionBarActivity {
         snackbar.setActionTextColor(actionColor).show();
     }
 
-    public void showSnackBar(String text, int duration, String action, int actionColor, View.OnClickListener listener){
+    public void showSnackBar(String text, int duration, String action, int actionColor, View.OnClickListener listener) {
         Snackbar.make(findViewById(R.id.content_view), text, duration).setAction(action, listener)
                 .setActionTextColor(actionColor).show();
     }
 
-    public void showSnackBar(String text, int duration, String action, View.OnClickListener listener){
+    public void showSnackBar(String text, int duration, String action, View.OnClickListener listener) {
         Snackbar.make(findViewById(R.id.content_view), text, duration).setAction(action, listener)
                 .setActionTextColor(SettingsActivity.getAccentColor()).show();
     }
 
-    public boolean isSAFIssue(String docId){
+    public boolean isSAFIssue(String docId) {
         boolean isSAFIssue = Build.VERSION.SDK_INT == Build.VERSION_CODES.KITKAT
                 && !TextUtils.isEmpty(docId) && docId.startsWith(ExternalStorageProvider.ROOT_ID_SECONDARY);
 
-        if(isSAFIssue){
+        if (isSAFIssue) {
             showError(R.string.saf_issue);
         }
         return isSAFIssue;
@@ -261,7 +329,7 @@ public abstract class BaseActivity extends ActionBarActivity {
     public static final int REQUEST_STORAGE = 47;
 
     protected void requestStoragePermissions() {
-        if(PermissionUtil.hasStoragePermission(this)) {
+        if (PermissionUtil.hasStoragePermission(this)) {
             again();
         } else {
             if (ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)) {

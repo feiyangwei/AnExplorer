@@ -14,17 +14,16 @@ android {
 
     applicationVariants.all { variant ->
         variant.outputs.all {
-            outputFileName = "${parent.name}-${variant.name}-${variant.versionName}.apk"
+            outputFileName = "${parent.name}.apk"
         }
     }
 
     defaultConfig {
         versionName "1.0"
-        versionCode = 64
+        versionCode = 1
         minSdkVersion 17
         targetSdkVersion 28
         vectorDrawables.useSupportLibrary = true
-        multiDexEnabled true
         buildConfigField "String", "LICENSE_KEY",  "$props.LICENSE_KEY"
         buildConfigField "String", "DROPBOX_CLIENT_ID",  "$props.DROPBOX_CLIENT_ID"
         buildConfigField "String", "DROPBOX_CLIENT_KEY",  "$props.DROPBOX_CLIENT_KEY"
@@ -40,7 +39,7 @@ android {
     }
     buildTypes {
         debug {
-            minifyEnabled false
+            minifyEnabled true
             shrinkResources false
             useProguard false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'),
@@ -116,6 +115,5 @@ dependencies {
     freeImplementation "com.google.firebase:firebase-core:16.0.3"
     freeImplementation "com.google.firebase:firebase-ads:15.0.1"
     freeImplementation 'com.anjlab.android.iab.v3:library:1.0.44'
-    implementation 'com.android.support:multidex:1.0.3'
 }
 

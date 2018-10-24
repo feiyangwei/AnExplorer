@@ -433,7 +433,6 @@ public class HomeFragment extends Fragment {
     }
 
     private void openRoot(RootInfo rootInfo){
-        Log.e("BGA",rootInfo.toString());
         DocumentsActivity activity = ((DocumentsActivity)getActivity());
         activity.onRootPicked(rootInfo, mHomeRoot);
         AnalyticsManager.logEvent("open_shortcuts", rootInfo ,new Bundle());

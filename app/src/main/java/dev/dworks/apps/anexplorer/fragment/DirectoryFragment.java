@@ -392,8 +392,10 @@ public class DirectoryFragment extends RecyclerFragment {
 	@Override
 	public void onResume() {
 		super.onResume();
-		updateDisplayState();
-		onUninstall();
+		//updateDisplayState();
+		//onUninstall();
+		onUserSortOrderChanged();
+		//updateDisplayState();
 	}
 
     public void onDisplayStateChanged() {
@@ -405,7 +407,7 @@ public class DirectoryFragment extends RecyclerFragment {
 		// Sort order change always triggers reload; we'll trigger state change
 		// on the flip side.
 		getLoaderManager().restartLoader(mLoaderId, null, mCallbacks);
-		getListView().smoothScrollToPosition(0);
+		//getListView().smoothScrollToPosition(0);
 	}
 
     public void onUserModeChanged() {
@@ -1066,9 +1068,10 @@ public class DirectoryFragment extends RecyclerFragment {
 				}
 			}
 
-			if (mType == TYPE_RECENT_OPEN) {
-				onUserSortOrderChanged();
-			}
+//			if (mType == TYPE_RECENT_OPEN) {
+//				onUserSortOrderChanged();
+//			}
+			onUserSortOrderChanged();
 		}
 	}
 
@@ -1393,8 +1396,8 @@ public class DirectoryFragment extends RecyclerFragment {
 			onUninstall();
 			AnalyticsManager.logEvent("uninstall", params);
 		} else {
-			deleteFiles(docs, type, "Delete files ?");
-			AnalyticsManager.logEvent("delete", params);
+			deleteFiles(docs, type, "确认删除文件 ?");
+			AnalyticsManager.logEvent("删除", params);
 		}
 	}
 
