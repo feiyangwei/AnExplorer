@@ -1333,6 +1333,7 @@ public class DirectoryFragment extends RecyclerFragment {
 			return true;
         case R.id.menu_open:
 			openDocument(docs.get(0));
+			openDocument(docs.get(0));
             return true;
         case R.id.menu_details:
             Intent intent2 = new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS, Uri.parse("package:"
@@ -1427,9 +1428,9 @@ public class DirectoryFragment extends RecyclerFragment {
 
 	private void renameDocument(DocumentInfo doc){
 		RenameFragment.show(((BaseActivity) getActivity()).getSupportFragmentManager(), doc);
-		Bundle params = new Bundle();
-		params.putString(FILE_TYPE, IconUtils.getTypeNameFromMimeType(doc.mimeType));
-		AnalyticsManager.logEvent("rename", params);
+//		Bundle params = new Bundle();
+//		params.putString(FILE_TYPE, IconUtils.getTypeNameFromMimeType(doc.mimeType));
+//		AnalyticsManager.logEvent("rename", params);
 	}
 
 	private void infoDocument(DocumentInfo doc) {

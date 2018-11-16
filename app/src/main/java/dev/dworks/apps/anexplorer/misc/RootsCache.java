@@ -195,6 +195,7 @@ public class RootsCache {
         /**
          * Only update roots belonging to given authority. Other roots will
          * be copied from cached {@link #mRoots} values.
+         * 只有更新根属于给定的权威。其他的根从缓存复制{@link # mRoots}的值。
          */
         public UpdateTask(String authority) {
             mAuthority = authority;
@@ -247,6 +248,7 @@ public class RootsCache {
         private void handleDocumentsProvider(ProviderInfo info) {
             // Ignore stopped packages for now; we might query them
             // later during UI interaction.
+            //忽略现在停止包;我们可以查询后在UI交互。
             if ((info.applicationInfo.flags & ApplicationInfo.FLAG_STOPPED) != 0) {
                 if (LOGD) Log.d(TAG, "Ignoring stopped authority " + info.authority);
                 mTaskStoppedAuthorities.add(info.authority);
@@ -274,6 +276,7 @@ public class RootsCache {
 
     /**
      * Bring up requested provider and query for all active roots.
+     * 打开请求的提供程序并查询所有活动根。
      */
     private Collection<RootInfo> loadRootsForAuthority(ContentResolver resolver, String authority) {
         if (LOGD) Log.d(TAG, "Loading roots for " + authority);
