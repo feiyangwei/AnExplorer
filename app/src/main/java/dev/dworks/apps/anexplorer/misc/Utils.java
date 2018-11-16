@@ -528,7 +528,7 @@ public class Utils {
 
     public static String getSuffix(){
         return Utils.isProVersion() ? " Pro" : ""
-                + (DocumentsApplication.isTelevision()? " for Android TV" : "");
+                + ("");
     }
 
     public static void openFeedback(Activity activity){

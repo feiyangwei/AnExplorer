@@ -28,7 +28,6 @@ import android.net.Uri;
 import android.os.CancellationSignal;
 import android.os.ParcelFileDescriptor;
 import android.support.provider.DocumentFile;
-import androidx.collection.ArrayMap;
 import android.text.TextUtils;
 import android.util.Log;
 import android.util.LruCache;
@@ -48,6 +47,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Map;
 
+import androidx.collection.ArrayMap;
 import dev.dworks.apps.anexplorer.BuildConfig;
 import dev.dworks.apps.anexplorer.DocumentsApplication;
 import dev.dworks.apps.anexplorer.R;
@@ -63,7 +63,6 @@ import dev.dworks.apps.anexplorer.model.DocumentsContract.Root;
 import dev.dworks.apps.anexplorer.setting.SettingsActivity;
 import dev.dworks.apps.anexplorer.usb.UsbUtils;
 
-import static dev.dworks.apps.anexplorer.DocumentsApplication.isTelevision;
 import static dev.dworks.apps.anexplorer.misc.FileUtils.getTypeForName;
 import static dev.dworks.apps.anexplorer.misc.MimeTypes.BASIC_MIME_TYPE;
 
@@ -400,11 +399,6 @@ public class UsbStorageProvider extends DocumentsProvider {
         flags |= Document.FLAG_SUPPORTS_MOVE;
         flags |= Document.FLAG_SUPPORTS_COPY;
         flags |= Document.FLAG_SUPPORTS_EDIT;
-
-        if(isTelevision()) {
-            flags |= Document.FLAG_DIR_PREFERS_GRID;
-        }
-
 
         final String mimeType = getMimeType(file);
         if(MimePredicate.mimeMatches(MimePredicate.VISUAL_MIMES, mimeType)){

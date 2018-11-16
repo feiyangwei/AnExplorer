@@ -15,43 +15,39 @@ import static dev.dworks.apps.anexplorer.setting.SettingsActivity.KEY_PRIMARY_CO
 import static dev.dworks.apps.anexplorer.setting.SettingsActivity.KEY_THEME_STYLE;
 
 public class ThemePreferenceFragment extends PreferenceFragment
-		implements OnPreferenceChangeListener, Preference.OnPreferenceClickListener{
+        implements OnPreferenceChangeListener, Preference.OnPreferenceClickListener {
 
-	public ThemePreferenceFragment() {
-	}
-	
-	@Override
-	public void onCreate(Bundle savedInstanceState) {
-		super.onCreate(savedInstanceState);
-		addPreferencesFromResource(R.xml.pref_theme);
-		PreferenceScreen preferenceScreen = (PreferenceScreen) findPreference("ThemePreferenceScreen");
-		
-		Preference preferencePrimaryColor = findPreference(KEY_PRIMARY_COLOR);
-		preferencePrimaryColor.setOnPreferenceChangeListener(this);
-		preferencePrimaryColor.setOnPreferenceClickListener(this);
+    public ThemePreferenceFragment() {
+    }
 
-		findPreference(KEY_ACCENT_COLOR).setOnPreferenceClickListener(this);
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        addPreferencesFromResource(R.xml.pref_theme);
+        PreferenceScreen preferenceScreen = (PreferenceScreen) findPreference("ThemePreferenceScreen");
 
-		Preference preferenceThemeStyle = findPreference(KEY_THEME_STYLE);
-		preferenceThemeStyle.setOnPreferenceChangeListener(this);
-		preferenceThemeStyle.setOnPreferenceClickListener(this);
-		if(DocumentsApplication.isTelevision()){
-			preferenceScreen.removePreference(preferenceThemeStyle);
-		}
+        Preference preferencePrimaryColor = findPreference(KEY_PRIMARY_COLOR);
+        preferencePrimaryColor.setOnPreferenceChangeListener(this);
+        preferencePrimaryColor.setOnPreferenceClickListener(this);
 
-	}
+        findPreference(KEY_ACCENT_COLOR).setOnPreferenceClickListener(this);
 
-	@Override
-	public boolean onPreferenceChange(Preference preference, Object newValue) {
-		SettingsActivity.logSettingEvent(preference.getKey());
-        ((SettingsActivity)getActivity()).changeActionBarColor(Integer.valueOf(newValue.toString()));
-		getActivity().recreate();
-		return true;
-	}
+        Preference preferenceThemeStyle = findPreference(KEY_THEME_STYLE);
+        preferenceThemeStyle.setOnPreferenceChangeListener(this);
+        preferenceThemeStyle.setOnPreferenceClickListener(this);
+    }
 
-	@Override
-	public boolean onPreferenceClick(Preference preference) {
-		SettingsActivity.logSettingEvent(preference.getKey());
-		return false;
-	}
+    @Override
+    public boolean onPreferenceChange(Preference preference, Object newValue) {
+        SettingsActivity.logSettingEvent(preference.getKey());
+        ((SettingsActivity) getActivity()).changeActionBarColor(Integer.valueOf(newValue.toString()));
+        getActivity().recreate();
+        return true;
+    }
+
+    @Override
+    public boolean onPreferenceClick(Preference preference) {
+        SettingsActivity.logSettingEvent(preference.getKey());
+        return false;
+    }
 }

@@ -15,7 +15,7 @@ import dev.dworks.apps.anexplorer.misc.IconUtils;
 import dev.dworks.apps.anexplorer.network.NetworkConnection;
 import dev.dworks.apps.anexplorer.provider.ExplorerProvider;
 
-import static dev.dworks.apps.anexplorer.DocumentsApplication.isTelevision;
+
 import static dev.dworks.apps.anexplorer.model.DocumentInfo.getCursorString;
 
 public class ConnectionsAdapter extends BaseAdapter {
@@ -56,7 +56,7 @@ public class ConnectionsAdapter extends BaseAdapter {
         final ImageView icon1 = (ImageView) convertView.findViewById(android.R.id.icon1);
         final TextView summary = (TextView) convertView.findViewById(android.R.id.summary);
         final View popupButton = convertView.findViewById(R.id.button_popup);
-        popupButton.setVisibility(isTelevision() ? View.INVISIBLE : View.VISIBLE);
+        popupButton.setVisibility(View.VISIBLE);
         if (null != mListener) {
             popupButton.setOnClickListener(mListener);
         }

@@ -168,8 +168,6 @@
             <intent-filter>
                 <action android:name="${applicationId}.action.START_FTPSERVER" />
                 <action android:name="${applicationId}.action.STOP_FTPSERVER" />
-                <action android:name="${applicationId}.action.FTPSERVER_STARTED" />
-                <action android:name="${applicationId}.action.FTPSERVER_STOPPED" />
             </intent-filter>
         </receiver>
 
@@ -315,8 +313,6 @@
                 <action android:name="android.intent.action.VIEW"/>
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE"/>
-                <data android:scheme="https"
-                    android:host="integrations.cloudrail.com" />
             </intent-filter>
 
         </activity>

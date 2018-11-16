@@ -33,9 +33,7 @@ import android.os.Environment;
 import android.os.FileObserver;
 import android.os.Handler;
 import android.os.ParcelFileDescriptor;
-import androidx.core.os.EnvironmentCompat;
 import android.support.provider.DocumentFile;
-import androidx.collection.ArrayMap;
 import android.text.TextUtils;
 import android.util.Log;
 
@@ -44,6 +42,9 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
 
+import androidx.annotation.GuardedBy;
+import androidx.collection.ArrayMap;
+import androidx.core.os.EnvironmentCompat;
 import dev.dworks.apps.anexplorer.BuildConfig;
 import dev.dworks.apps.anexplorer.DocumentsApplication;
 import dev.dworks.apps.anexplorer.R;
@@ -63,10 +64,8 @@ import dev.dworks.apps.anexplorer.misc.VolumeInfo;
 import dev.dworks.apps.anexplorer.model.DocumentsContract;
 import dev.dworks.apps.anexplorer.model.DocumentsContract.Document;
 import dev.dworks.apps.anexplorer.model.DocumentsContract.Root;
-import androidx.annotation.GuardedBy;
 import dev.dworks.apps.anexplorer.setting.SettingsActivity;
 
-import static dev.dworks.apps.anexplorer.DocumentsApplication.isTelevision;
 import static dev.dworks.apps.anexplorer.misc.FileUtils.getTypeForFile;
 import static dev.dworks.apps.anexplorer.model.DocumentInfo.getCursorString;
 import static dev.dworks.apps.anexplorer.provider.UsbStorageProvider.ROOT_ID_USB;
@@ -567,10 +566,6 @@ public class ExternalStorageProvider extends StorageProvider {
             flags |= Document.FLAG_SUPPORTS_ARCHIVE;
             flags |= Document.FLAG_SUPPORTS_BOOKMARK;
             flags |= Document.FLAG_SUPPORTS_EDIT;
-
-            if(isTelevision()) {
-                flags |= Document.FLAG_DIR_PREFERS_GRID;
-            }
         }
 
         final String mimeType = getTypeForFile(file);

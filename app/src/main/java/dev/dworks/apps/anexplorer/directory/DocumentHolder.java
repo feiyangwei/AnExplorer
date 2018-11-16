@@ -3,7 +3,9 @@ package dev.dworks.apps.anexplorer.directory;
 import android.content.Context;
 import android.database.Cursor;
 import android.os.Build;
+
 import androidx.recyclerview.widget.RecyclerView;
+
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -17,9 +19,8 @@ import dev.dworks.apps.anexplorer.common.RecyclerFragment.RecyclerItemClickListe
 import dev.dworks.apps.anexplorer.misc.IconHelper;
 import dev.dworks.apps.anexplorer.model.DocumentInfo;
 
-import static dev.dworks.apps.anexplorer.DocumentsApplication.isTelevision;
 
-public abstract class DocumentHolder extends BaseHolder implements View.OnClickListener{
+public abstract class DocumentHolder extends BaseHolder implements View.OnClickListener {
 
     protected final Context mContext;
 
@@ -45,7 +46,7 @@ public abstract class DocumentHolder extends BaseHolder implements View.OnClickL
 
     public DocumentHolder(Context context, ViewGroup parent, int layout,
                           OnItemClickListener onItemClickListener,
-                              DocumentsAdapter.Environment environment) {
+                          DocumentsAdapter.Environment environment) {
         this(context, inflateLayout(context, parent, layout));
 
         mEnv = environment;
@@ -111,7 +112,7 @@ public abstract class DocumentHolder extends BaseHolder implements View.OnClickL
         line2 = itemView.findViewById(R.id.line2);
         iconView = itemView.findViewById(android.R.id.icon);
         popupButton.setOnClickListener(this);
-        popupButton.setVisibility(isTelevision() ? View.INVISIBLE : View.VISIBLE);
+        popupButton.setVisibility(View.VISIBLE);
     }
 
     public void setData(Cursor cursor, int position) {
@@ -146,7 +147,7 @@ public abstract class DocumentHolder extends BaseHolder implements View.OnClickL
 
     @Override
     public void onClick(View v) {
-        if(null != mOnItemClickListener) {
+        if (null != mOnItemClickListener) {
             mOnItemClickListener.onItemViewClick(v, getLayoutPosition());
         }
     }

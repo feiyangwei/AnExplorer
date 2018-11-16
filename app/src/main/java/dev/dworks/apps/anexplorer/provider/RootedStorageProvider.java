@@ -25,7 +25,9 @@ import android.net.Uri;
 import android.os.Binder;
 import android.os.CancellationSignal;
 import android.os.ParcelFileDescriptor;
+
 import androidx.collection.ArrayMap;
+
 import android.text.TextUtils;
 
 import java.io.BufferedReader;
@@ -51,20 +53,18 @@ import androidx.annotation.GuardedBy;
 import dev.dworks.apps.anexplorer.root.RootCommands;
 import dev.dworks.apps.anexplorer.root.RootFile;
 
-import static dev.dworks.apps.anexplorer.DocumentsApplication.isTelevision;
-
 public class RootedStorageProvider extends StorageProvider {
     private static final String TAG = "RootedStorage";
 
     public static final String AUTHORITY = BuildConfig.APPLICATION_ID + ".rootedstorage.documents";
     // docId format: root:path/to/file
 
-    private static final String[] DEFAULT_ROOT_PROJECTION = new String[] {
+    private static final String[] DEFAULT_ROOT_PROJECTION = new String[]{
             Root.COLUMN_ROOT_ID, Root.COLUMN_FLAGS, Root.COLUMN_ICON, Root.COLUMN_TITLE,
             Root.COLUMN_DOCUMENT_ID, Root.COLUMN_AVAILABLE_BYTES, Root.COLUMN_CAPACITY_BYTES, Root.COLUMN_PATH,
     };
 
-    private static final String[] DEFAULT_DOCUMENT_PROJECTION = new String[] {
+    private static final String[] DEFAULT_DOCUMENT_PROJECTION = new String[]{
             Document.COLUMN_DOCUMENT_ID, Document.COLUMN_MIME_TYPE, Document.COLUMN_PATH, Document.COLUMN_DISPLAY_NAME,
             Document.COLUMN_LAST_MODIFIED, Document.COLUMN_FLAGS, Document.COLUMN_SIZE, Document.COLUMN_SUMMARY,
     };
@@ -101,7 +101,7 @@ public class RootedStorageProvider extends StorageProvider {
             mRoots.put(rootId, root);
 
             root.rootId = rootId;
-            root.flags =  Root.FLAG_SUPPORTS_CREATE | Root.FLAG_SUPPORTS_EDIT | Root.FLAG_LOCAL_ONLY | Root.FLAG_ADVANCED;
+            root.flags = Root.FLAG_SUPPORTS_CREATE | Root.FLAG_SUPPORTS_EDIT | Root.FLAG_LOCAL_ONLY | Root.FLAG_ADVANCED;
             root.title = getContext().getString(R.string.root_root_storage);
             root.path = path;
             root.docId = getDocIdForRootFile(path);
@@ -161,7 +161,7 @@ public class RootedStorageProvider extends StorageProvider {
 
         return mostSpecific.getKey() + ':' + path;
     }
-    
+
     private RootFile getRootFileForDocId(String docId) throws FileNotFoundException {
         final int splitIndex = docId.indexOf(':', 1);
         final String tag = docId.substring(0, splitIndex);
@@ -187,7 +187,7 @@ public class RootedStorageProvider extends StorageProvider {
     private void includeRootFile(MatrixCursor result, String docId, RootFile file)
             throws FileNotFoundException {
         if (docId == null) {
-            if(!file.isValid()){
+            if (!file.isValid()) {
                 return;
             }
             docId = getDocIdForRootFile(file);
@@ -197,10 +197,10 @@ public class RootedStorageProvider extends StorageProvider {
 
         int flags = 0;
 
-        if(!file.isValid()){
-        	return;
+        if (!file.isValid()) {
+            return;
         }
-        
+
         if (file.canWrite()) {
             if (file.isDirectory()) {
                 flags |= Document.FLAG_DIR_SUPPORTS_CREATE;
@@ -213,15 +213,11 @@ public class RootedStorageProvider extends StorageProvider {
             flags |= Document.FLAG_SUPPORTS_COPY;
             flags |= Document.FLAG_SUPPORTS_ARCHIVE;
             flags |= Document.FLAG_SUPPORTS_EDIT;
-
-            if(isTelevision()) {
-                flags |= Document.FLAG_DIR_PREFERS_GRID;
-            }
         }
 
         final String displayName = file.getName();
         final String mimeType = getTypeForFile(file);
-        if(MimePredicate.mimeMatches(MimePredicate.VISUAL_MIMES, mimeType)){
+        if (MimePredicate.mimeMatches(MimePredicate.VISUAL_MIMES, mimeType)) {
             flags |= Document.FLAG_SUPPORTS_THUMBNAIL;
         }
 
@@ -241,7 +237,7 @@ public class RootedStorageProvider extends StorageProvider {
             row.add(Document.COLUMN_SUMMARY, file.list().length + " files");
         }*/
     }
-    
+
     @Override
     public Cursor queryRoots(String[] projection) throws FileNotFoundException {
         final MatrixCursor result = new MatrixCursor(resolveRootProjection(projection));
@@ -304,7 +300,7 @@ public class RootedStorageProvider extends StorageProvider {
         final RootFile before = getRootFileForDocId(documentId);
         final RootFile after = new RootFile(before.getParent(), displayName);
 
-        if(!RootCommands.renameRootTarget(before, after)){
+        if (!RootCommands.renameRootTarget(before, after)) {
             throw new IllegalStateException("Failed to rename " + before);
         }
         final String afterDocId = getDocIdForRootFile(new RootFile(after.getParent(), displayName));
@@ -334,7 +330,7 @@ public class RootedStorageProvider extends StorageProvider {
         final RootFile before = getRootFileForDocId(sourceDocumentId);
         final RootFile after = new RootFile(getRootFileForDocId(targetParentDocumentId).getPath(), before.getName());
 
-        if(!RootCommands.renameRootTarget(before, after)){
+        if (!RootCommands.renameRootTarget(before, after)) {
             throw new IllegalStateException("Failed to rename " + before);
         }
         final String afterDocId = getDocIdForRootFile(after);
@@ -372,27 +368,27 @@ public class RootedStorageProvider extends StorageProvider {
                 resolveDocumentProjection(projection), parentDocumentId, parent);
         try {
             BufferedReader br = RootCommands.listFiles(parent.getPath());
-            if (null != br){
-            	Scanner scanner = new Scanner(br);
-            	while (scanner.hasNextLine()) {
-            	  String line = scanner.nextLine();
-            	  try {
-            		  includeRootFile(result, null, new RootFile(parent, line));
-            	  } catch (Exception e) {
-            		  e.printStackTrace();
-            	  }
+            if (null != br) {
+                Scanner scanner = new Scanner(br);
+                while (scanner.hasNextLine()) {
+                    String line = scanner.nextLine();
+                    try {
+                        includeRootFile(result, null, new RootFile(parent, line));
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
 
-            	}
-            	scanner.close();
+                }
+                scanner.close();
             }
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
         return result;
     }
 
     @SuppressWarnings("unused")
-	@Override
+    @Override
     public Cursor querySearchDocuments(String rootId, String query, String[] projection)
             throws FileNotFoundException {
         final MatrixCursor result = new MatrixCursor(resolveDocumentProjection(projection));
@@ -404,7 +400,7 @@ public class RootedStorageProvider extends StorageProvider {
 
         try {
             BufferedReader br = RootCommands.findFiles(parent.getPath(), query);
-            if (null != br){
+            if (null != br) {
                 Scanner scanner = new Scanner(br);
                 while (scanner.hasNextLine()) {
                     String line = scanner.nextLine();
@@ -472,7 +468,7 @@ public class RootedStorageProvider extends StorageProvider {
                 final long id = getVideoForPathCleared(file.getPath());
                 return openOrCreateVideoThumbnailCleared(id, signal);
             } else {
-            	return null;//DocumentsContract.openImageThumbnail(file);
+                return null;//DocumentsContract.openImageThumbnail(file);
             }
         } finally {
             Binder.restoreCallingIdentity(token);
@@ -501,7 +497,7 @@ public class RootedStorageProvider extends StorageProvider {
         }
     }
 
-    private void notifyDocumentsChanged(String docId){
+    private void notifyDocumentsChanged(String docId) {
         final String rootId = getParentRootIdForDocId(docId);
         Uri uri = DocumentsContract.buildChildDocumentsUri(AUTHORITY, rootId);
         getContext().getContentResolver().notifyChange(uri, null, false);

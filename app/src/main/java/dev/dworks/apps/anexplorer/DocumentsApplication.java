@@ -42,7 +42,7 @@ import dev.dworks.apps.anexplorer.misc.Utils;
 import dev.dworks.apps.anexplorer.setting.SettingsActivity;
 
 public class DocumentsApplication extends AppFlavour {
-	private static final long PROVIDER_ANR_TIMEOUT = 20 * DateUtils.SECOND_IN_MILLIS;
+    private static final long PROVIDER_ANR_TIMEOUT = 20 * DateUtils.SECOND_IN_MILLIS;
     private static DocumentsApplication sInstance;
 
     static {
@@ -54,7 +54,6 @@ public class DocumentsApplication extends AppFlavour {
     private SAFManager mSAFManager;
     private Point mThumbnailsSize;
     private ThumbnailCache mThumbnailCache;
-    private static boolean isTelevision;
 
     public static RootsCache getRootsCache(Context context) {
         return ((DocumentsApplication) context.getApplicationContext()).mRoots;
@@ -79,7 +78,7 @@ public class DocumentsApplication extends AppFlavour {
 
     public static ContentProviderClient acquireUnstableProviderOrThrow(
             ContentResolver resolver, String authority) throws RemoteException {
-    	final ContentProviderClient client = ContentProviderClientCompat.acquireUnstableContentProviderClient(resolver, authority);
+        final ContentProviderClient client = ContentProviderClientCompat.acquireUnstableContentProviderClient(resolver, authority);
         if (client == null) {
             throw new RemoteException("Failed to acquire provider for " + authority);
         }
@@ -90,7 +89,7 @@ public class DocumentsApplication extends AppFlavour {
     @Override
     public void onCreate() {
         super.onCreate();
-        if(!BuildConfig.DEBUG) {
+        if (!BuildConfig.DEBUG) {
             AnalyticsManager.intialize(getApplicationContext());
         }
         sInstance = this;
@@ -105,22 +104,7 @@ public class DocumentsApplication extends AppFlavour {
 
         mThumbnailCache = new ThumbnailCache(memoryClassBytes / 4);
 
-        final IntentFilter packageFilter = new IntentFilter();
-        packageFilter.addAction(Intent.ACTION_PACKAGE_ADDED);
-        packageFilter.addAction(Intent.ACTION_PACKAGE_CHANGED);
-        packageFilter.addAction(Intent.ACTION_PACKAGE_REMOVED);
-        packageFilter.addAction(Intent.ACTION_PACKAGE_DATA_CLEARED);
-        packageFilter.addDataScheme("package");
-        registerReceiver(mCacheReceiver, packageFilter);
 
-        final IntentFilter localeFilter = new IntentFilter();
-        localeFilter.addAction(Intent.ACTION_LOCALE_CHANGED);
-        registerReceiver(mCacheReceiver, localeFilter);
-
-        isTelevision = Utils.isTelevision(this);
-        if(isTelevision && Integer.valueOf(SettingsActivity.getThemeStyle()) != AppCompatDelegate.MODE_NIGHT_YES){
-            SettingsActivity.setThemeStyle(AppCompatDelegate.MODE_NIGHT_YES);
-        }
     }
 
     public static synchronized DocumentsApplication getInstance() {
@@ -133,20 +117,4 @@ public class DocumentsApplication extends AppFlavour {
         mThumbnailCache.onTrimMemory(level);
     }
 
-    private BroadcastReceiver mCacheReceiver = new BroadcastReceiver() {
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            final Uri data = intent.getData();
-            if (data != null) {
-                final String authority = data.getAuthority();
-                mRoots.updateAuthorityAsync(authority);
-            } else {
-                mRoots.updateAsync();
-            }
-        }
-    };
-
-    public static boolean isTelevision() {
-        return isTelevision;
-    }
 }
