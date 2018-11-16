@@ -17,15 +17,13 @@
 package dev.dworks.apps.anexplorer;
 
 import android.content.Intent;
-import android.net.Uri;
 import android.os.Bundle;
-import androidx.core.app.ShareCompat;
-import androidx.appcompat.widget.Toolbar;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.TextView;
 
-import dev.dworks.apps.anexplorer.misc.AnalyticsManager;
+import androidx.appcompat.widget.Toolbar;
+import dev.dworks.apps.anexplorer.misc.AboutFlavour;
 import dev.dworks.apps.anexplorer.misc.ColorUtils;
 import dev.dworks.apps.anexplorer.misc.SystemBarTintManager;
 import dev.dworks.apps.anexplorer.misc.Utils;
@@ -33,8 +31,6 @@ import dev.dworks.apps.anexplorer.setting.SettingsActivity;
 
 import static dev.dworks.apps.anexplorer.DocumentsActivity.getStatusBarHeight;
 import static dev.dworks.apps.anexplorer.misc.Utils.getSuffix;
-import static dev.dworks.apps.anexplorer.misc.Utils.openFeedback;
-import static dev.dworks.apps.anexplorer.misc.Utils.openPlaystore;
 
 public class AboutActivity extends AboutFlavour implements View.OnClickListener {
 

@@ -80,8 +80,6 @@ public class RootsExpandableAdapter extends BaseExpandableListAdapter {
                 apps.add(new RootItem(root));
             } else if (RootInfo.isNetwork(root)) {
                 network.add(new RootItem(root));
-            } else if (RootInfo.isCloud(root)) {
-                network.add(new RootItem(root));
             }
         }
 

@@ -1,4 +1,4 @@
-package dev.dworks.apps.anexplorer;
+package dev.dworks.apps.anexplorer.misc;
 
 import android.app.Activity;
 import android.app.Application;

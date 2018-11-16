@@ -442,11 +442,7 @@ public class RootsFragment extends Fragment {
                 String summaryText = root.summary;
                 summary.setText(summaryText);
                 summary.setVisibility(TextUtils.isEmpty(summaryText) ? View.GONE : View.VISIBLE);
-            } if(root.isCloudStorage()) {
-                String summaryText = root.summary;
-                summary.setText(summaryText);
-                summary.setVisibility(TextUtils.isEmpty(summaryText) ? View.GONE : View.VISIBLE);
-            } else {
+            }else {
                 summary.setVisibility(View.GONE);
             }
         }

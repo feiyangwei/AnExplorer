@@ -32,6 +32,7 @@ import android.text.format.DateUtils;
 import androidx.appcompat.app.AppCompatDelegate;
 import androidx.collection.ArrayMap;
 import dev.dworks.apps.anexplorer.misc.AnalyticsManager;
+import dev.dworks.apps.anexplorer.misc.AppFlavour;
 import dev.dworks.apps.anexplorer.misc.ContentProviderClientCompat;
 import dev.dworks.apps.anexplorer.misc.CrashReportingManager;
 import dev.dworks.apps.anexplorer.misc.RootsCache;

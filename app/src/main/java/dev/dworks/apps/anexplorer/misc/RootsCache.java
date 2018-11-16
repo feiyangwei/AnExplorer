@@ -45,7 +45,6 @@ import dev.dworks.apps.anexplorer.BaseActivity.State;
 import dev.dworks.apps.anexplorer.BuildConfig;
 import dev.dworks.apps.anexplorer.DocumentsApplication;
 import dev.dworks.apps.anexplorer.R;
-import dev.dworks.apps.anexplorer.cloud.CloudConnection;
 import dev.dworks.apps.anexplorer.libcore.io.IoUtils;
 import dev.dworks.apps.anexplorer.libcore.io.MultiMap;
 import dev.dworks.apps.anexplorer.libcore.util.Objects;
@@ -54,7 +53,6 @@ import dev.dworks.apps.anexplorer.model.DocumentsContract.Root;
 import dev.dworks.apps.anexplorer.model.RootInfo;
 import dev.dworks.apps.anexplorer.network.NetworkConnection;
 import dev.dworks.apps.anexplorer.provider.AppsProvider;
-import dev.dworks.apps.anexplorer.provider.CloudStorageProvider;
 import dev.dworks.apps.anexplorer.provider.DocumentsProvider;
 import dev.dworks.apps.anexplorer.provider.ExternalStorageProvider;
 import dev.dworks.apps.anexplorer.provider.MediaDocumentsProvider;
@@ -475,16 +473,6 @@ public class RootsCache {
         return null;
     }
 
-    public RootInfo getRootInfo(CloudConnection connection){
-        for (RootInfo root : mRoots.get(CloudStorageProvider.AUTHORITY)) {
-            if (root.rootId.equals(connection.clientId)
-                    && root.path.equals(connection.getPath())) {
-                return root;
-            }
-        }
-
-        return null;
-    }
 
     public RootInfo getRootInfo(String host, String path, String authority){
         for (RootInfo root : mRoots.get(authority)) {

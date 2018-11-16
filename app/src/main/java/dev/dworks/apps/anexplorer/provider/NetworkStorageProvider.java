@@ -39,7 +39,6 @@ import dev.dworks.apps.anexplorer.network.NetworkFile;
 import static dev.dworks.apps.anexplorer.misc.MimeTypes.BASIC_MIME_TYPE;
 import static dev.dworks.apps.anexplorer.model.DocumentInfo.getCursorInt;
 import static dev.dworks.apps.anexplorer.network.NetworkConnection.SERVER;
-import static dev.dworks.apps.anexplorer.provider.CloudStorageProvider.TYPE_CLOUD;
 import static dev.dworks.apps.anexplorer.provider.ExplorerProvider.ConnectionColumns;
 
 /**
@@ -84,7 +83,7 @@ public class NetworkStorageProvider extends DocumentsProvider {
         mRoots.clear();
         try {
             String mSelectionClause = ConnectionColumns.TYPE + " NOT LIKE ?";
-            String[] mSelectionArgs = {"%"+TYPE_CLOUD+"%"};
+            String[] mSelectionArgs = {"%"+"cloud"+"%"};
             cursor = getContext().getContentResolver().query(ExplorerProvider.buildConnection(),
                     null, mSelectionClause, mSelectionArgs, null);
             while (cursor.moveToNext()) {

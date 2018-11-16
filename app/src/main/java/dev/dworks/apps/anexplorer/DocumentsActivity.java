@@ -42,9 +42,8 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
-import android.provider.MediaStore;
+
 import androidx.core.content.ContextCompat;
-import androidx.core.content.FileProvider;
 import androidx.core.view.MenuItemCompat;
 import androidx.core.view.ViewCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
@@ -53,7 +52,7 @@ import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.appcompat.widget.SearchView;
 import androidx.appcompat.widget.Toolbar;
-import android.text.TextUtils;
+
 import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
@@ -63,7 +62,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewGroup.LayoutParams;
 import android.view.WindowManager;
-import android.widget.AbsListView;
 import android.widget.AdapterView;
 import android.widget.BaseAdapter;
 import android.widget.FrameLayout;
@@ -88,7 +86,6 @@ import java.util.Locale;
 import java.util.concurrent.Executor;
 
 import dev.dworks.apps.anexplorer.archive.DocumentArchiveHelper;
-import dev.dworks.apps.anexplorer.fragment.ConnectionsFragment;
 import dev.dworks.apps.anexplorer.fragment.CreateDirectoryFragment;
 import dev.dworks.apps.anexplorer.fragment.CreateFileFragment;
 import dev.dworks.apps.anexplorer.fragment.DirectoryFragment;
@@ -101,7 +98,6 @@ import dev.dworks.apps.anexplorer.fragment.SaveFragment;
 import dev.dworks.apps.anexplorer.fragment.ServerFragment;
 import dev.dworks.apps.anexplorer.libcore.io.IoUtils;
 import dev.dworks.apps.anexplorer.misc.AnalyticsManager;
-import dev.dworks.apps.anexplorer.misc.AppRate;
 import dev.dworks.apps.anexplorer.misc.AsyncTask;
 import dev.dworks.apps.anexplorer.misc.ConnectionUtils;
 import dev.dworks.apps.anexplorer.misc.ContentProviderClientCompat;
@@ -1302,7 +1298,7 @@ public class DocumentsActivity extends BaseActivity {
                 if(null != root && root.isHome()){
                     HomeFragment.show(fm);
                 } else if(null != root && root.isConnections()){
-                    ConnectionsFragment.show(fm);
+
                 } else if(null != root && root.isServerStorage()){
                     ServerFragment.show(fm, root);
                 } else {
@@ -1981,9 +1977,6 @@ public class DocumentsActivity extends BaseActivity {
 
         mActionMenu.attachToListView(currentView);
         RootInfo root = getCurrentRoot();
-        if(null != root && root.isCloudStorage()){
-            mActionMenu.newNavigationMenu(R.menu.menu_fab_cloud);
-        }
         int defaultColor = SettingsActivity.getPrimaryColor(this);
         ViewCompat.setNestedScrollingEnabled(currentView, true);
         mActionMenu.show();

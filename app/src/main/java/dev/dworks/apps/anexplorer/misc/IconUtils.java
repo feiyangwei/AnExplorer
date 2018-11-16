@@ -27,23 +27,18 @@ import android.graphics.Canvas;
 import android.graphics.drawable.AdaptiveIconDrawable;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
-import android.graphics.drawable.LayerDrawable;
 import android.os.Build;
-import androidx.annotation.RequiresApi;
-import androidx.core.content.ContextCompat;
-import androidx.core.graphics.drawable.DrawableCompat;
-import androidx.collection.ArrayMap;
 import android.util.TypedValue;
 
+import androidx.annotation.RequiresApi;
+import androidx.collection.ArrayMap;
+import androidx.core.content.ContextCompat;
+import androidx.core.graphics.drawable.DrawableCompat;
 import dev.dworks.apps.anexplorer.DocumentsActivity;
 import dev.dworks.apps.anexplorer.R;
 import dev.dworks.apps.anexplorer.model.DocumentsContract.Document;
 import dev.dworks.apps.anexplorer.provider.MediaDocumentsProvider;
 
-import static dev.dworks.apps.anexplorer.provider.CloudStorageProvider.TYPE_BOX;
-import static dev.dworks.apps.anexplorer.provider.CloudStorageProvider.TYPE_DROPBOX;
-import static dev.dworks.apps.anexplorer.provider.CloudStorageProvider.TYPE_GDRIVE;
-import static dev.dworks.apps.anexplorer.provider.CloudStorageProvider.TYPE_ONEDRIVE;
 import static dev.dworks.apps.anexplorer.network.NetworkConnection.CLIENT;
 import static dev.dworks.apps.anexplorer.network.NetworkConnection.SERVER;
 
@@ -358,21 +353,6 @@ public class IconUtils {
         }
     }
 
-    public static Drawable loadCloudIcon(Context context, String type) {
-
-        if (TYPE_GDRIVE.equals(type)) {
-            return ContextCompat.getDrawable(context, R.drawable.ic_root_gdrive);
-        } else if (TYPE_DROPBOX.equals(type)) {
-            return ContextCompat.getDrawable(context, R.drawable.ic_root_dropbox);
-        } else if (TYPE_ONEDRIVE.equals(type)) {
-            return ContextCompat.getDrawable(context, R.drawable.ic_root_onedrive);
-        } else if (TYPE_BOX.equals(type)) {
-            return ContextCompat.getDrawable(context, R.drawable.ic_root_box);
-        } else {
-            return ContextCompat.getDrawable(context, R.drawable.ic_root_cloud);
-        }
-    }
-    
     public static String getTypeNameFromMimeType(String mimeType) {
         int resource = 0;
         if (Document.MIME_TYPE_DIR.equals(mimeType)) {
